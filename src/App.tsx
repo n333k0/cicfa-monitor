@@ -12,6 +12,7 @@ import Dock from './components/hud/Dock';
 import ViewSelector from './components/hud/ViewSelector';
 import GlitchFX from './components/fx/GlitchFX';
 import RawStream from './components/fx/RawStream';
+import TargetProfile from './components/hud/TargetProfile';
 import { engine } from './sim/engine';
 import { useEngine } from './sim/useEngine';
 import { installGlobalBridge, attachPostMessageBridge } from './sim/connectors';
@@ -30,7 +31,7 @@ export default function App() {
   return (
     <div className={`shell ${snap.panelMode}`}>
       <Stage />
-      <RawStream />
+      {snap.selectedInstitution ? <TargetProfile /> : <RawStream />}
       <GlitchFX />
       <TopBar />
       <ViewSelector />

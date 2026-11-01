@@ -7,7 +7,7 @@ p.on('pageerror', (e) => errs.push(e.message));
 p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 await p.goto(process.env.URL || 'http://localhost:5273', { waitUntil: 'domcontentloaded' });
 await p.waitForTimeout(5000);
-await p.evaluate((id) => window.CICFA.select(id), process.env.ID || 'ar-malba');
+await p.evaluate((id) => window.CICFA.select(id), process.env.ID || 'malba');
 await p.waitForTimeout(+(process.env.WAIT || 14000));
 if (process.env.OUT_STEPS) { await p.mouse.move(840, 470); for (let i = 0; i < +process.env.OUT_STEPS; i++) { await p.mouse.wheel(0, 300); await p.waitForTimeout(250); } await p.waitForTimeout(+(process.env.OUT_WAIT || 8000)); }
 await p.screenshot({ path: process.env.SHOT || 'preview-city.png', timeout: 90000 });

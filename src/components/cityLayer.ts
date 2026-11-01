@@ -21,6 +21,7 @@ const ROAD: Record<string, [RGBA, number]> = {
 const PLACE_MIN_ZOOM: Record<string, number> = {
   city: 5, town: 8, village: 11, suburb: 11, quarter: 12.5, neighbourhood: 13, hamlet: 13,
 };
+const URBAN = new Set(['residential', 'commercial', 'industrial', 'retail', 'neighbourhood', 'suburb', 'quarter']);
 const name = (p: Record<string, unknown>) => String(p['name:latin'] ?? p.name ?? '').toUpperCase();
 
 // Per-tile cache so we don't re-filter / re-upload tile geometry every animation frame.
@@ -49,8 +50,11 @@ function prepare(content: Feat[], zb: number) {
     } else if (L === 'building') {
       if (zb >= 15) geo.push(f);
     } else if (L === 'boundary') {
-      // provinces / states only (countries already drawn by the world layer); skip maritime lines
-      if (f.properties.admin_level === 4 && !f.properties.maritime) geo.push(f);
+      // countries + provinces (the coarse world borders fade out as you zoom in); skip maritime lines
+      if (f.properties.admin_level <= 4 && !f.properties.maritime) geo.push(f);
+    } else if (L === 'landuse') {
+      // urban footprint as a faint tint — the city's shape, subtle
+      if (URBAN.has(f.properties.class)) geo.push(f);
     } else {
       geo.push(f);
     }
@@ -67,11 +71,18 @@ const lineColor = (f: Feat): RGBA => {
   if (L === 'waterway') return [90, 120, 160, 90];
   if (L === 'park') return [120, 150, 130, 55];
   if (L === 'building') return [140, 146, 160, 38];
-  if (L === 'boundary') return [150, 156, 172, 70];
+  if (L === 'boundary') return f.properties.admin_level <= 2 ? [200, 206, 222, 120] : [150, 156, 172, 70];
+  if (L === 'landuse') return [0, 0, 0, 0];
   return [140, 146, 160, 50];
 };
 const lineWidth = (f: Feat) => (f.properties.layerName === 'transportation' ? (ROAD[f.properties.class] ?? ROAD.minor)[1] : 0.5);
-const fillColor = (f: Feat): RGBA => (f.properties.layerName === 'water' ? [8, 14, 26, 255] : [0, 0, 0, 0]);
+const fillColor = (f: Feat): RGBA => {
+  const L = f.properties.layerName;
+  if (L === 'water') return [6, 12, 24, 255];
+  if (L === 'landuse') return [26, 22, 30, 150];   // urban tint (faint warm grey)
+  if (L === 'park') return [14, 26, 20, 140];      // parks, faint green-black
+  return [0, 0, 0, 0];
+};
 
 /** zoom = current map zoom. Returns null below city range. */
 export function cityLayer(zoom: number) {
@@ -80,7 +91,7 @@ export function cityLayer(zoom: number) {
   const opacity = Math.min(1, (zoom - 4) / 1.5);
   return new MVTLayer({
     id: 'city', data: TILEJSON, binary: false, minZoom: 4, maxZoom: 14, opacity,
-    loadOptions: { mvt: { layers: ['water', 'waterway', 'park', 'transportation', 'transportation_name', 'place', 'building', 'boundary'] } },
+    loadOptions: { mvt: { layers: ['landuse', 'water', 'waterway', 'park', 'transportation', 'transportation_name', 'place', 'building', 'boundary'] } },
     updateTriggers: { renderSubLayers: [zb] },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderSubLayers: (props: any) => {

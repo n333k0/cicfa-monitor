@@ -206,7 +206,39 @@ const _seen = new Set(SEED_INSTITUTIONS.map((x) => x.id));
 const _argNew = ARGENTINA.filter((x) => !_seen.has(x.id));
 for (const x of _argNew) _seen.add(x.id);
 const _extra = (expandedRaw as Institution[]).filter((x) => !_seen.has(x.id));
-export const INSTITUTIONS: Institution[] = [...SEED_INSTITUTIONS, ..._argNew, ..._extra];
+
+// Same place listed twice (seed + curated/Wikidata, e.g. 'MALBA' and 'MALBA — Museo de Arte…'):
+// within ~1.5 km and one normalised name contains the other → merge into the first row,
+// keeping the richer name/blurb/scene/tags. Grid-bucketed so it stays cheap at startup.
+const _norm = (t: string) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function dedupe(rows: Institution[]): Institution[] {
+  const grid = new Map<string, Institution[]>();
+  const cell = (lon: number, lat: number) => `${Math.floor(lon / 0.02)}:${Math.floor(lat / 0.02)}`;
+  const out: Institution[] = [];
+  for (const x of rows) {
+    const gx = Math.floor(x.lon / 0.02), gy = Math.floor(x.lat / 0.02), nx = _norm(x.name);
+    let dup: Institution | undefined;
+    for (let dx = -1; dx <= 1 && !dup; dx++) for (let dy = -1; dy <= 1 && !dup; dy++) {
+      for (const y of grid.get(`${gx + dx}:${gy + dy}`) ?? []) {
+        const ny = _norm(y.name);
+        const km = Math.hypot((x.lon - y.lon) * 111 * Math.cos((x.lat * Math.PI) / 180), (x.lat - y.lat) * 111);
+        if (km < 1.5 && nx.length > 2 && ny.length > 2 && (nx.includes(ny) || ny.includes(nx))) { dup = y; break; }
+      }
+    }
+    if (dup) {
+      if (x.name.length > dup.name.length) dup.name = x.name;
+      dup.blurb ??= x.blurb; dup.scene ??= x.scene; dup.source ??= x.source;
+      if (x.tags) dup.tags = Array.from(new Set([...(dup.tags ?? []), ...x.tags]));
+      dup.prominence = Math.max(dup.prominence, x.prominence);
+      continue;
+    }
+    const k = cell(x.lon, x.lat);
+    (grid.get(k) ?? grid.set(k, []).get(k)!).push(x);
+    out.push(x);
+  }
+  return out;
+}
+export const INSTITUTIONS: Institution[] = dedupe([...SEED_INSTITUTIONS, ..._argNew, ..._extra]);
 
 // Boost the whole Argentine scene so it visibly lights up (targeting is
 // prominence-weighted) and tag it for filtering / the focus bias.

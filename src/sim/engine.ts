@@ -72,6 +72,8 @@ class Engine {
 
   active: AttackEvent[] = [];
   log: AttackEvent[] = [];
+  /** per-institution attack history (resolved), newest first, capped — feeds the target profile */
+  byTarget: Record<string, AttackEvent[]> = {};
   hits: Record<string, number> = {};
   private agentHits: Record<string, number> = {};
 
@@ -134,6 +136,7 @@ class Engine {
   };
 
   getActive = () => this.active;
+  historyFor = (id: string): AttackEvent[] => this.byTarget[id] ?? [];
   getAgents = () => this.agents;
 
   private computeStats(): Stats {
@@ -213,6 +216,9 @@ class Engine {
     e.phase = 'resolved';
     this.log.unshift(e);
     if (this.log.length > 400) this.log.length = 400;
+    const h = (this.byTarget[e.targetId] ??= []);
+    h.unshift(e);
+    if (h.length > 60) h.length = 60;
     if (!silent) this.notifyChange();
   }
 

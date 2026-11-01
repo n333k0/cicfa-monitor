@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import { MapView as DeckMapView, FlyToInterpolator, WebMercatorViewport } from '@deck.gl/core';
-import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer, LineLayer } from '@deck.gl/layers';
 import type { PickingInfo } from '@deck.gl/core';
 
 
@@ -14,6 +14,9 @@ import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
 import { cityLayer } from './cityLayer';
+import { nearest } from '../sim/intel';
+import { INSTITUTION_INDEX } from '../data/institutions';
+import { AGENT_INDEX } from '../data/agents';
 import type { AttackEvent } from '../sim/types';
 
 // FLAT view: pure thin-line minimal map on black (no basemap tiles / fills / labels).
@@ -90,6 +93,16 @@ export default function MapView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zq, lonq, latq, insts, hits, sel]);
 
+  // link analysis for the selected target: who hit it (op origins) + its physical neighbours
+  const selInst = sel ? INSTITUTION_INDEX[sel] : null;
+  const neigh = useMemo(() => (selInst ? nearest(selInst, 6) : []), [selInst]);
+  const aggressorLinks = useMemo(() => {
+    if (!selInst) return [];
+    const ids = [...new Set(engine.historyFor(selInst.id).map((e) => e.agentId))];
+    return ids.map((id) => AGENT_INDEX[id]).filter(Boolean).map((a) => ({ a, from: [a.originLon, a.originLat] as [number, number], to: [selInst.lon, selInst.lat] as [number, number] }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selInst, snap.version]);
+
   const worldFade = Math.max(0, Math.min(1, (10 - vs.zoom) / 2.5));   // crude world outlines give way to real streets
   const layers = [
     cityLayer(vs.zoom),
@@ -127,6 +140,18 @@ export default function MapView() {
       fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
       getPixelOffset: (d: { dy: number }) => [6, d.dy], characterSet: 'auto',
       updateTriggers: { getColor: [sel, snap.version] },
+    }),
+    new LineLayer({
+      id: 'sel-neighbours', data: selInst ? neigh : [],
+      getSourcePosition: () => [selInst!.lon, selInst!.lat], getTargetPosition: (n: { inst: { lon: number; lat: number } }) => [n.inst.lon, n.inst.lat],
+      getColor: [235, 238, 245, 110], getWidth: 0.6, widthUnits: 'pixels',
+      updateTriggers: { getSourcePosition: [sel] },
+    }),
+    new ArcLayer({
+      id: 'sel-aggressors', data: aggressorLinks, greatCircle: true, widthUnits: 'pixels',
+      getSourcePosition: (d: { from: [number, number] }) => d.from, getTargetPosition: (d: { to: [number, number] }) => d.to,
+      getSourceColor: (d: { a: { color: number[] } }) => [d.a.color[0], d.a.color[1], d.a.color[2], 60],
+      getTargetColor: [230, 0, 38, 200], getWidth: 1.1,
     }),
     new ArcLayer({
       id: 'arcs', data: active, greatCircle: true, widthUnits: 'pixels',
