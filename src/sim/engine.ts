@@ -1,5 +1,5 @@
 import { AGENTS, AGENT_INDEX } from '../data/agents';
-import { INSTITUTIONS, INSTITUTION_INDEX } from '../data/institutions';
+import { INSTITUTIONS, INSTITUTION_INDEX, FOCUS_INSTITUTIONS } from '../data/institutions';
 import { VECTORS } from '../data/vectors';
 import { haversineKm } from './geo';
 import type {
@@ -16,11 +16,12 @@ function weightedVector(vectors: VectorId[]): VectorId {
   return vectors[vectors.length - 1];
 }
 function targetFor(): Institution {
-  // prominence-weighted target selection, biased toward unlucky nodes
-  let best: Institution = INSTITUTIONS[0];
+  // ~35% of strikes are biased toward the Argentine focus scene; prominence-weighted.
+  const pool = (FOCUS_INSTITUTIONS.length && Math.random() < 0.35) ? FOCUS_INSTITUTIONS : INSTITUTIONS;
+  let best: Institution = pool[0];
   let bestScore = -Infinity;
   for (let k = 0; k < 6; k++) {
-    const cand = pick(INSTITUTIONS);
+    const cand = pick(pool);
     const score = cand.prominence * (0.5 + Math.random());
     if (score > bestScore) { bestScore = score; best = cand; }
   }
@@ -101,8 +102,8 @@ class Engine {
 
   constructor() {
     for (const a of this.agents) { this.lastSpawn[a.id] = 0; this.agentHits[a.id] = 0; }
-    // seed a little history so the board isn't empty on first paint
-    for (let k = 0; k < 24; k++) this.spawn(undefined, true);
+    // seed history so the board opens busy
+    for (let k = 0; k < 64; k++) this.spawn(undefined, true);
   }
 
   // ── subscriptions ───────────────────────────────────────────────
@@ -238,7 +239,7 @@ class Engine {
     // spawn per-agent by cadence
     for (const a of this.agents) {
       if (a.cadence <= 0 || a.status === 'offline' || a.status === 'idle') continue;
-      const interval = 60_000 / a.cadence;
+      const interval = 60_000 / (a.cadence * 1.9); // global activity multiplier — more attacks
       if (this.clock - (this.lastSpawn[a.id] || 0) >= interval) {
         this.lastSpawn[a.id] = this.clock;
         if (Math.random() < (a.status === 'degraded' ? 0.6 : 1)) { this.spawn(a.id); changed = true; }

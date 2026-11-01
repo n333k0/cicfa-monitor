@@ -1,5 +1,6 @@
 import type { Institution, Region } from '../sim/types';
 import expandedRaw from './institutions.expanded.json';
+import { ARGENTINA } from './argentina';
 
 type Kind = Institution['kind'];
 // compact row helper
@@ -202,8 +203,23 @@ const SEED_INSTITUTIONS: Institution[] = [
 // Merge the curated seed with the researched Wikidata+BA dataset (dedupe by id;
 // seed entries win). ~2.5k institutions total.
 const _seen = new Set(SEED_INSTITUTIONS.map((x) => x.id));
+const _argNew = ARGENTINA.filter((x) => !_seen.has(x.id));
+for (const x of _argNew) _seen.add(x.id);
 const _extra = (expandedRaw as Institution[]).filter((x) => !_seen.has(x.id));
-export const INSTITUTIONS: Institution[] = [...SEED_INSTITUTIONS, ..._extra];
+export const INSTITUTIONS: Institution[] = [...SEED_INSTITUTIONS, ..._argNew, ..._extra];
+
+// Boost the whole Argentine scene so it visibly lights up (targeting is
+// prominence-weighted) and tag it for filtering / the focus bias.
+function isArgentine(x: Institution): boolean { return x.country === 'Argentina' || x.id.startsWith('ar-'); }
+for (const x of INSTITUTIONS) {
+  if (isArgentine(x)) {
+    x.prominence = Math.max(x.prominence, 4);
+    x.tags = Array.from(new Set([...(x.tags ?? []), 'argentina']));
+  }
+}
+
+/** Argentine institutions — the attack engine biases a share of strikes here. */
+export const FOCUS_INSTITUTIONS: Institution[] = INSTITUTIONS.filter(isArgentine);
 
 export const INSTITUTION_INDEX: Record<string, Institution> = Object.fromEntries(
   INSTITUTIONS.map((x) => [x.id, x]),
