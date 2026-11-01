@@ -1,0 +1,25 @@
+import { engine } from '../../sim/engine';
+import { useEngine } from '../../sim/useEngine';
+import type { ViewMode } from '../../sim/types';
+
+const VIEWS: { id: ViewMode; label: string; ready: boolean }[] = [
+  { id: 'globe', label: 'GLOBE', ready: true },
+  { id: 'flat', label: 'FLAT', ready: true },
+  { id: 'arc', label: 'ARC', ready: false },
+  { id: 'ontology', label: 'ONTOLOGY', ready: false },
+];
+
+export default function ViewSelector() {
+  const snap = useEngine();
+  return (
+    <div className="viewsel panel">
+      <span className="vs-label">VIEW</span>
+      {VIEWS.map((v) => (
+        <button key={v.id} className={`vbtn ${snap.viewMode === v.id ? 'on' : ''} ${v.ready ? '' : 'soon'}`}
+          onClick={() => engine.setViewMode(v.id)} title={v.ready ? '' : 'in progress'}>
+          {v.label}
+        </button>
+      ))}
+    </div>
+  );
+}

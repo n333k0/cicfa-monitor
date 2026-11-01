@@ -1,0 +1,511 @@
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">SYS.OP.OVERRIDE // MALWARE_EXEC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" vid="5">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" vid="6">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;400;700&amp;display=swap" rel="stylesheet" vid="7">
+    <style vid="8">
+        :root {
+            --bg: #000000;
+            --text-main: #ffffff;
+            --text-dim: #666666;
+            --text-mid: #999999;
+            --accent-crimson: #e60026;
+            --accent-pink: #ffa6bd;
+            --accent-magenta: #ff0066;
+            --accent-darkred: #590000;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            line-height: 1.2;
+            overflow: hidden; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            -webkit-font-smoothing: none; 
+        }
+
+        
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.3;
+        }
+
+        .viewport {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+            padding: 40px;
+            z-index: 10;
+        }
+
+        
+        .glitch-layer-vertical {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .v-stripe {
+            position: absolute;
+            top: 0;
+            height: 100vh;
+            mix-blend-mode: screen;
+            animation: pulse-stripe 2s infinite alternate;
+        }
+
+        @keyframes pulse-stripe {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.9; }
+        }
+
+        .glitch-layer-horizontal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .h-tear {
+            position: absolute;
+            height: 1px;
+            background: var(--text-main);
+            width: 100%;
+            opacity: 0;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        @keyframes tear {
+            0% { opacity: 0; transform: scaleX(0); }
+            10% { opacity: 1; transform: scaleX(1); }
+            15% { opacity: 0; transform: scaleX(1); }
+            100% { opacity: 0; transform: scaleX(0); }
+        }
+
+        
+        .panel {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bracket-left {
+            border-left: 1px solid var(--accent-darkred);
+            padding-left: 15px;
+        }
+
+        .bracket-top {
+            border-top: 1px solid var(--text-dim);
+            padding-top: 10px;
+        }
+
+        
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            color: var(--text-dim);
+        }
+
+        .sys-title {
+            color: var(--text-main);
+            letter-spacing: 2px;
+        }
+
+        
+        .sys-log {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .data-table {
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            gap: 5px 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-table span:nth-child(odd) {
+            color: var(--text-dim);
+            text-align: right;
+        }
+
+        
+        .exec-log {
+            grid-column: 2;
+            grid-row: 2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exec-header {
+            display: grid;
+            grid-template-columns: 50px 40px 100px 1fr;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--text-dim);
+            padding-bottom: 5px;
+        }
+
+        #asm-output {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            height: calc(100vh - 200px);
+            mask-image: linear-gradient(to bottom, transparent, black 10%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%);
+        }
+
+        .asm-line {
+            display: grid;
+            grid-template-columns: 50px 40px 100px 1fr;
+            gap: 10px;
+            opacity: 0.8;
+        }
+
+        .asm-line.highlight {
+            color: var(--text-main);
+            opacity: 1;
+            font-weight: bold;
+        }
+        
+        .asm-line .op { color: var(--accent-pink); }
+        .asm-line .hex { color: var(--text-mid); }
+
+        
+        .mem-dump {
+            grid-column: 3;
+            grid-row: 2;
+            text-align: right;
+        }
+
+        .mem-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px 10px;
+            color: var(--text-mid);
+        }
+
+        .mem-line {
+            display: contents;
+        }
+
+        .mem-line span:first-child {
+            color: var(--text-dim);
+        }
+
+        
+        footer {
+            grid-column: 1 / -1;
+            grid-row: 3;
+            border-top: 1px solid var(--accent-darkred);
+            padding-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 12px;
+            background-color: var(--accent-crimson);
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        
+        .text-red { color: var(--accent-crimson); }
+        .text-magenta { color: var(--accent-magenta); }
+        
+        
+        .anchor-text {
+            position: absolute;
+            top: 20%;
+            left: 30%;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+        
+        .anchor-text p { margin-bottom: 2px;}
+
+    </style>
+</head>
+<body vid="9">
+
+    <div class="glitch-layer-vertical" id="vertical-glitches" vid="10"></div>
+    <div class="glitch-layer-horizontal" id="horizontal-glitches" vid="11"></div>
+
+    <div class="anchor-text" vid="12">
+        <p vid="13">1401 AUTOCODER SYSTEM*,PRINT*32</p>
+        <div style="border-top: 1px solid white; width: 150px; margin: 4px 0;" vid="14"></div>
+        <p class="text-dim" style="color: var(--text-dim)" vid="15">REDUNDANCY ON TAPE LCAC</p>
+    </div>
+
+    <div class="viewport" vid="16">
+        <header vid="17">
+            <span class="sys-title" vid="18">GMRK1-2.999999 HEADR*</span>
+            <span vid="19">SYSTP.GMRK1-21</span>
+            <span vid="20">SEQ PG LIN LABEL</span>
+        </header>
+
+        <section class="panel sys-log bracket-left" vid="21">
+            <div class="data-table" vid="22">
+                <span vid="23">KI</span><span vid="24">SYSTP.GMRK1-21</span>
+                <span vid="25">C</span><span class="text-main" vid="26">GMRK1-2.999999</span>
+                <span vid="27">BU</span><span vid="28">LOOP1</span>
+                <span vid="29">SW</span><span vid="30">GMRK1</span>
+                <span vid="31">RT</span><span vid="32">SYSTP.GMRK1-1</span>
+                <span vid="33">BEF</span><span vid="34">TSTSS</span>
+                <span vid="35">B</span><span vid="36">LOOP1</span>
+            </div>
+
+            <p style="margin-bottom: 10px; color: var(--text-dim);" vid="37">RETRIEVE PASS 2 FOR ASSEMBLY RUN</p>
+            
+            <div class="data-table" vid="38">
+                <span vid="39">SW</span><span vid="40">GMRK1</span>
+                <span vid="41">BEL</span><span vid="42">OP</span>
+                <span vid="43">DO</span><span vid="44">JOB 1401 AUTOCODER-PASS 1-GENERATE SYSTEM TAPE-VI</span>
+                <span vid="45"></span><span vid="46">CTL 630 1</span>
+                <span vid="47">YSTP</span><span vid="48">EQU (U1</span>
+                <span vid="49">KRD</span><span vid="50">EQU 0</span>
+                <span vid="51">RINT</span><span vid="52">EQU 200</span>
+                <span vid="53"></span><span vid="54">ORG 87</span>
+            </div>
+
+            <div class="data-table" style="margin-top: 40px; border-top: 1px solid var(--accent-darkred); padding-top: 10px;" vid="55">
+                <span vid="56">X1</span><span vid="57">DCW 000</span>
+                <span vid="58"></span><span vid="59">DC 00</span>
+                <span vid="60">XR2</span><span vid="61">DCW 000</span>
+                <span vid="62"></span><span vid="63">DC 00</span>
+                <span vid="64">XR3</span><span vid="65">DCW 000</span>
+                <span vid="66"></span><span vid="67">DC 000000</span>
+            </div>
+        </section>
+
+        <section class="panel exec-log" vid="68">
+            <div class="exec-header" vid="69">
+                <span vid="70">ADDR</span><span vid="71">LN</span><span vid="72">OPCODE</span><span vid="73">OPERANDS</span>
+            </div>
+            <div id="asm-output" vid="74">
+                
+            </div>
+        </section>
+
+        <section class="panel mem-dump bracket-top" vid="75">
+            <div class="mem-grid" id="mem-output" vid="76">
+                 
+            </div>
+            
+            <div style="margin-top: 50px; border-left: 1px solid var(--text-dim); padding-left: 10px; text-align: left;" vid="77">
+                <p style="color: var(--text-dim); margin-bottom: 5px;" vid="78">SFX CT LOCN INSTRUCTION TYPE CARD</p>
+                <div style="display: flex; gap: 15px;" vid="79">
+                    <span class="text-red" vid="80">B</span>
+                    <span vid="81">4</span>
+                    <span vid="82">0423</span>
+                    <span vid="83">. 835</span>
+                    <span vid="84">41</span>
+                </div>
+            </div>
+        </section>
+
+        <footer vid="85">
+            <span class="text-red" vid="86">SYS.HALT.OVERRIDE&gt;</span>
+            <span class="text-main" vid="87">EXECUTING PAYLOAD...</span>
+            <span class="cursor" vid="88"></span>
+        </footer>
+    </div>
+
+    <script vid="89">
+        
+        const opcodes = ['B', 'M', 'SW', 'DCW', 'EQU', 'ORG', 'HALT1', 'LIBRH', 'LOOP1', 'TSTSS'];
+        const hexChars = '0123456789ABCDEF';
+
+        function rHex(len) {
+            let res = '';
+            for(let i=0; i<len; i++) res += hexChars.charAt(Math.floor(Math.random() * hexChars.length));
+            return res;
+        }
+
+        function rInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        }
+
+        
+        const asmOutput = document.getElementById('asm-output');
+        const maxAsmLines = 30;
+
+        function generateAsmLine() {
+            const isHighlight = Math.random() > 0.8;
+            const addr = rInt(100, 999).toString();
+            const ln = rInt(1, 9).toString();
+            const op = opcodes[Math.floor(Math.random() * opcodes.length)];
+            const operand1 = `0${rInt(100, 999)}`;
+            const operand2 = Math.random() > 0.5 ? `(U1 ${rHex(3)} R` : `. ${rInt(100, 999)}`;
+            const operand3 = rInt(10, 99);
+
+            const div = document.createElement('div');
+            div.className = `asm-line ${isHighlight ? 'highlight' : ''}`;
+            div.innerHTML = `
+                <span>${addr}</span>
+                <span>${ln}</span>
+                <span class="op">${op}</span>
+                <span class="hex">${operand1} ${operand2}    ${operand3}</span>
+            `;
+            
+            asmOutput.appendChild(div);
+            if (asmOutput.childElementCount > maxAsmLines) {
+                asmOutput.removeChild(asmOutput.firstChild);
+            }
+        }
+
+        setInterval(generateAsmLine, 80); 
+
+        
+        const memOutput = document.getElementById('mem-output');
+        const maxMemLines = 25;
+
+        function generateMemLine() {
+            const seq = rInt(348, 364);
+            const pg = rInt(3, 9);
+            const lin = rInt(10, 99);
+            const val = rHex(3);
+
+            const div = document.createElement('div');
+            div.className = 'mem-line';
+            div.innerHTML = `
+                <span>${seq}</span>
+                <span>${pg}</span>
+                <span>${lin}</span>
+                <span>${val}</span>
+            `;
+
+            if(memOutput.childElementCount >= maxMemLines * 4) { 
+                for(let i=0; i<4; i++) memOutput.removeChild(memOutput.firstChild);
+            }
+            memOutput.appendChild(div.children[0]);
+            memOutput.appendChild(div.children[0]);
+            memOutput.appendChild(div.children[0]);
+            memOutput.appendChild(div.children[0]);
+        }
+
+        setInterval(generateMemLine, 150);
+
+        
+        const vGlitchContainer = document.getElementById('vertical-glitches');
+        const colors = ['var(--accent-crimson)', 'var(--accent-pink)', 'var(--accent-magenta)'];
+
+        function createVerticalStripes() {
+            
+            vGlitchContainer.innerHTML = '';
+            
+            
+            const clusters = [
+                { x: '10%', count: 4, spread: 2 },
+                { x: '12%', count: 2, spread: 1 },
+                { x: '55%', count: 5, spread: 3 },
+                { x: '58%', count: 2, spread: 1 },
+                { x: '78%', count: 1, spread: 0 },
+            ];
+
+            clusters.forEach(cluster => {
+                const baseX = parseFloat(cluster.x);
+                for(let i=0; i<cluster.count; i++) {
+                    const stripe = document.createElement('div');
+                    stripe.className = 'v-stripe';
+                    
+                    
+                    const width = Math.random() > 0.8 ? rInt(2,3) : 1;
+                    stripe.style.width = `${width}px`;
+                    
+                    
+                    const offset = (Math.random() * cluster.spread * 2) - cluster.spread;
+                    stripe.style.left = `calc(${baseX}% + ${offset}px)`;
+                    
+                    
+                    stripe.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    
+                    stripe.style.animationDuration = `${rInt(5, 20) / 10}s`;
+                    stripe.style.animationDelay = `${rInt(0, 10) / 10}s`;
+                    
+                    
+                    const topStart = rInt(40, 70);
+                    stripe.style.top = `${topStart}vh`;
+                    stripe.style.height = `${100 - topStart}vh`;
+
+                    vGlitchContainer.appendChild(stripe);
+                }
+            });
+        }
+        
+        createVerticalStripes();
+        
+        setInterval(createVerticalStripes, 10000); 
+
+        
+        const hGlitchContainer = document.getElementById('horizontal-glitches');
+
+        function triggerHorizontalTear() {
+            const tear = document.createElement('div');
+            tear.className = 'h-tear';
+            tear.style.top = `${rInt(10, 90)}%`;
+            tear.style.animation = `tear ${rInt(2, 6)/10}s cubic-bezier(0.1, 0.9, 0.2, 1) forwards`;
+            
+            hGlitchContainer.appendChild(tear);
+            
+            setTimeout(() => {
+                if (tear.parentNode) tear.parentNode.removeChild(tear);
+            }, 600);
+        }
+
+        
+        (function loopTears() {
+            var rand = Math.round(Math.random() * 3000) + 500;
+            setTimeout(function() {
+                triggerHorizontalTear();
+                loopTears();  
+            }, rand);
+        }());
+
+    </script>
+
+</body></html>
