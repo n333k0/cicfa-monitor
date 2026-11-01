@@ -9,7 +9,6 @@ import { AGENTS } from '../data/agents';
 import { VECTORS } from '../data/vectors';
 import { engine } from '../sim/engine';
 import { useEngine } from '../sim/useEngine';
-import MapView from './MapView';
 
 type RGB = [number, number, number];
 type Kind = 'op' | 'region' | 'inst';
@@ -34,7 +33,6 @@ export default function OntologyView() {
 
   // rebuild node/link set from current telemetry (~4Hz via snapshot version)
   useEffect(() => {
-    if (snap.ontologyEarth) return;
     const hits = snap.hits;
     const top = INSTITUTIONS.filter((d) => (hits[d.id] ?? 0) > 0)
       .sort((a, b) => (hits[b.id] ?? 0) - (hits[a.id] ?? 0)).slice(0, 48);
@@ -60,11 +58,10 @@ export default function OntologyView() {
       }
     }
     linksRef.current = links;
-  }, [snap.version, snap.ontologyEarth, snap.hits, snap.log]);
+  }, [snap.version, snap.hits, snap.log]);
 
   // continuous force simulation
   useEffect(() => {
-    if (snap.ontologyEarth) return;
     let raf = 0;
     const step = () => {
       const nodes = [...nodesRef.current.values()];
@@ -95,17 +92,7 @@ export default function OntologyView() {
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [snap.ontologyEarth]);
-
-  const toggle = (
-    <button className="onto-toggle" onClick={() => engine.toggleOntologyEarth()}>
-      {snap.ontologyEarth ? '◇ NETWORK' : '◉ EARTH'}
-    </button>
-  );
-
-  if (snap.ontologyEarth) {
-    return (<><MapView />{toggle}</>);
-  }
+  }, []);
 
   const nodes = [...nodesRef.current.values()];
   const pos = nodesRef.current;
@@ -145,7 +132,6 @@ export default function OntologyView() {
       {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}</div>}
       <div className="map-vignette" />
       <div className="map-scanlines" />
-      {toggle}
     </div>
   );
 }

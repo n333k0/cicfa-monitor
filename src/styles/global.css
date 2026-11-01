@@ -93,9 +93,9 @@ body {
 .kv .v.green { color: var(--green); }
 .clock { color: var(--crimson); font-size: 11px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
 
-.col-l { position: absolute; top: 108px; left: 36px; bottom: 54px; width: 310px; z-index: 35;
+.col-l { position: absolute; top: 74px; left: 36px; bottom: 54px; width: 310px; z-index: 35;
   display: flex; flex-direction: column; gap: 26px; pointer-events: none; overflow: hidden; }
-.col-r { position: absolute; top: 108px; right: 36px; bottom: 54px; width: 360px; z-index: 35;
+.col-r { position: absolute; top: 74px; right: 36px; bottom: 54px; width: 360px; z-index: 35;
   display: flex; flex-direction: column; gap: 26px; pointer-events: none; overflow: hidden; }
 .grow { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .grow .panel-b { flex: 1; min-height: 0; overflow: hidden; }
@@ -173,7 +173,7 @@ body {
 .detail .row b { color: var(--ink); font-weight: 400; }
 
 /* ═══ view selector — plain text links ══════════════════════════ */
-.viewsel { position: absolute; top: 78px; left: 36px;
+.viewsel { position: absolute; top: 46px; left: 36px;
   z-index: 45; display: flex; align-items: baseline; gap: 16px; pointer-events: auto; }
 .viewsel .vs-label { color: var(--ink-faint); }
 .viewsel .vs-sep { display: none; }
@@ -226,7 +226,7 @@ body {
 @keyframes tear { 0% { opacity: 0; transform: scaleX(0); } 10% { opacity: 1; transform: scaleX(1); } 15% { opacity: 0; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(0); } }
 
 /* ═══ fast raw signal cascade ═══════════════════════════════════ */
-.rawstream { position: absolute; top: 112px; left: 362px; width: 252px; bottom: 66px;
+.rawstream { position: absolute; top: 92px; left: 362px; width: 252px; bottom: 66px;
   z-index: 34; pointer-events: none; opacity: 0.6; display: flex; flex-direction: column; }
 .rs-head { color: var(--ink-faint); margin-bottom: 6px; letter-spacing: 1px; }
 .rs-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;

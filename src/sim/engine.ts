@@ -81,7 +81,7 @@ class Engine {
 
   selectedInstitution: string | null = null;
   selectedAgent: string | null = null;
-  viewMode: ViewMode = 'ontology';
+  viewMode: ViewMode = 'flat';
   panelMode: 'float' | 'boxed' = 'float';
   ontologyEarth = false; // in ontology view: false = abstract network graph, true = geographic earth
   flyTarget: { lon: number; lat: number; zoom: number; at: number } | null = null;

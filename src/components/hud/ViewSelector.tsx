@@ -3,9 +3,9 @@ import { useEngine } from '../../sim/useEngine';
 import type { ViewMode } from '../../sim/types';
 
 const VIEWS: { id: ViewMode; label: string; ready: boolean }[] = [
-  { id: 'ontology', label: 'ONTOLOGY', ready: true },
+  { id: 'flat', label: 'MAP', ready: true },
   { id: 'globe', label: 'GLOBE', ready: true },
-  { id: 'flat', label: 'FLAT', ready: true },
+  { id: 'ontology', label: 'NETWORK', ready: true },
   { id: 'arc', label: 'ARC', ready: false },
 ];
 
