@@ -61,10 +61,10 @@ export default function MapView() {
       updateTriggers: { getRadius: [now], getFillColor: [sel], getLineColor: [sel] },
     }),
     new ScatterplotLayer({
-      id: 'nodes', data: insts, pickable: true, radiusUnits: 'pixels',
+      id: 'nodes', data: insts, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 0.6,
       getPosition: (d: typeof insts[number]) => [d.lon, d.lat],
-      getRadius: (d: typeof insts[number]) => (d.id === sel ? 4 : 1 + Math.min(3, (hits[d.id] ?? 0) * 0.15)),
-      getFillColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [160, 170, 190, 150]),
+      getRadius: (d: typeof insts[number]) => (d.id === sel ? 2.2 : 0.7 + Math.min(1.2, (hits[d.id] ?? 0) * 0.06)),
+      getFillColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [205, 212, 228, 235]),
       onClick: (i: PickingInfo) => { if (i.object) engine.selectInstitution((i.object as { id: string }).id); return true; },
       onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `${(i.object as { name: string }).name}` } : null),
       updateTriggers: { getRadius: [now, sel], getFillColor: [sel] },
