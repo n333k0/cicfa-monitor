@@ -31,9 +31,10 @@ function envelope(p: number) { if (p < 0.08) return p / 0.08; if (p <= 1) return
 export default function MapView() {
   const snap = useEngine();
   useFrame();
+  // default framing (chosen by the artist, 2026-11-01): one world ≈ 64% of the screen width, centred on the
+  // South Atlantic so Buenos Aires, Europe and Japan all sit in the open middle; wrapped copies show at the edges
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // fit exactly one world to the screen width so the map never shows a wrapped duplicate on load
-  const [vs, setVs] = useState<any>(() => ({ longitude: -8, latitude: 4, zoom: Math.max(1.2, Math.log2(window.innerWidth / 512)), pitch: 0, bearing: 0 }));
+  const [vs, setVs] = useState<any>(() => ({ longitude: -16, latitude: -6, zoom: Math.max(1, Math.log2((window.innerWidth * 0.64) / 512)), pitch: 0, bearing: 0 }));
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 
   useEffect(() => {
