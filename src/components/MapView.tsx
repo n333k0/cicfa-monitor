@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import { MapView as DeckMapView, LinearInterpolator } from '@deck.gl/core';
-import { ScatterplotLayer, ArcLayer, GeoJsonLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
 import type { PickingInfo } from '@deck.gl/core';
 
 import { INSTITUTIONS } from '../data/institutions';
+import { AGENTS } from '../data/agents';
 import { VECTORS } from '../data/vectors';
 import coastline from '../data/coastline.json';
+import borders from '../data/borders.json';
 import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
@@ -45,7 +47,8 @@ export default function MapView() {
   const domes = insts.filter((d) => (hits[d.id] ?? 0) > 0);
 
   const layers = [
-    new GeoJsonLayer({ id: 'graticule', data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 22], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
+    new GeoJsonLayer({ id: 'graticule', data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
+    new GeoJsonLayer({ id: 'borders', data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'coast', data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
     // ring-domes (flat analogue of the globe's hemisphere domes)
     new ScatterplotLayer({
@@ -82,6 +85,25 @@ export default function MapView() {
       getRadius: (p: { e: AttackEvent }) => 1.4 + p.e.severity * 0.6,
       getFillColor: (p: { e: AttackEvent }) => { const c = VECTORS[p.e.vector].color; return [c[0], c[1], c[2], 255]; },
       updateTriggers: { getPosition: [now], getFillColor: [now] },
+    }),
+    // operation origins (the Cyber Weapons Lab on the map)
+    new ScatterplotLayer({
+      id: 'ops', data: AGENTS.filter((a) => a.status !== 'offline'), pickable: true,
+      radiusUnits: 'pixels', stroked: true, lineWidthUnits: 'pixels',
+      getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
+      getRadius: (a: typeof AGENTS[number]) => (snap.selectedAgent === a.id ? 6 : 3.5),
+      getFillColor: (a: typeof AGENTS[number]) => [a.color[0], a.color[1], a.color[2], 235],
+      getLineColor: [255, 255, 255, 130], getLineWidth: 0.6,
+      onClick: (i: PickingInfo) => { if (i.object) engine.selectAgent((i.object as { id: string }).id); return true; },
+      updateTriggers: { getRadius: [snap.selectedAgent] },
+    }),
+    new TextLayer({
+      id: 'op-labels', data: AGENTS.filter((a) => a.status !== 'offline'),
+      getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
+      getText: (a: typeof AGENTS[number]) => a.handle,
+      getSize: 9, sizeUnits: 'pixels', getColor: [235, 120, 40, 210],
+      fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      getPixelOffset: [7, 0], characterSet: 'auto',
     }),
   ];
 

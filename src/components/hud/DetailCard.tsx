@@ -24,7 +24,8 @@ export default function DetailCard() {
         <div className="panel-h"><span>Target Dossier</span><span className="tag" style={{ cursor: 'pointer' }} onClick={() => engine.selectInstitution(null)}>✕ CLOSE</span></div>
         <div className="panel-b" style={{ overflow: 'auto' }}>
           <div className="big">{inst.name}</div>
-          <div className="mini" style={{ margin: '3px 0 8px' }}>{inst.city} · {inst.country} · {inst.kind}</div>
+          <div className="mini" style={{ margin: '3px 0 6px' }}>{inst.city} · {inst.country} · {inst.kind}{inst.scene ? ` · ${inst.scene}` : ''}</div>
+          {inst.blurb && <div style={{ color: 'var(--ink-dim)', margin: '0 0 8px', textTransform: 'none', lineHeight: 1.5 }}>{inst.blurb}</div>}
           <div className="row"><span>Coordinates</span><b>{inst.lat.toFixed(3)}, {inst.lon.toFixed(3)}</b></div>
           <div className="row"><span>Prominence</span><b>{'◆'.repeat(inst.prominence)}{'◇'.repeat(5 - inst.prominence)}</b></div>
           <div className="row"><span>Total strikes</span><b style={{ color: 'var(--amber)' }}>{engine.getSnapshot().hits[inst.id] ?? 0}</b></div>

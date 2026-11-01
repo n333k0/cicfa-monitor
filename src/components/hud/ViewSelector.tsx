@@ -3,10 +3,10 @@ import { useEngine } from '../../sim/useEngine';
 import type { ViewMode } from '../../sim/types';
 
 const VIEWS: { id: ViewMode; label: string; ready: boolean }[] = [
+  { id: 'ontology', label: 'ONTOLOGY', ready: true },
   { id: 'globe', label: 'GLOBE', ready: true },
   { id: 'flat', label: 'FLAT', ready: true },
   { id: 'arc', label: 'ARC', ready: false },
-  { id: 'ontology', label: 'ONTOLOGY', ready: false },
 ];
 
 export default function ViewSelector() {

@@ -57,6 +57,7 @@ export interface Snapshot {
   hits: Record<string, number>;
   viewMode: ViewMode;
   panelMode: 'float' | 'boxed';
+  ontologyEarth: boolean;
 }
 
 const ALL_VECTORS = Object.keys(VECTORS) as VectorId[];
@@ -79,8 +80,9 @@ class Engine {
 
   selectedInstitution: string | null = null;
   selectedAgent: string | null = null;
-  viewMode: ViewMode = 'flat';
+  viewMode: ViewMode = 'ontology';
   panelMode: 'float' | 'boxed' = 'float';
+  ontologyEarth = false; // in ontology view: false = abstract network graph, true = geographic earth
   flyTarget: { lon: number; lat: number; zoom: number; at: number } | null = null;
 
   filters: Filters = {
@@ -125,6 +127,7 @@ class Engine {
       hits: this.hits,
       viewMode: this.viewMode,
       panelMode: this.panelMode,
+      ontologyEarth: this.ontologyEarth,
     };
     return this._snap;
   };
@@ -270,6 +273,7 @@ class Engine {
     this.notifyChange();
   }
   setViewMode(m: ViewMode) { this.viewMode = m; this.selectedInstitution = null; this.notifyChange(); }
+  toggleOntologyEarth() { this.ontologyEarth = !this.ontologyEarth; this.notifyChange(); }
   setPanelMode(m: 'float' | 'boxed') { this.panelMode = m; this.notifyChange(); }
   togglePanelMode() { this.setPanelMode(this.panelMode === 'float' ? 'boxed' : 'float'); }
   consumeFlyTarget() { const t = this.flyTarget; this.flyTarget = null; return t; }

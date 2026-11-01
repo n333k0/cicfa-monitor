@@ -235,3 +235,9 @@ body {
 .rs-line.hl { color: var(--ink); font-weight: 700; }
 .rs-line .op { color: var(--pink); }
 .rs-line .tg { color: var(--ink-mid); overflow: hidden; text-overflow: ellipsis; }
+
+/* ═══ ontology earth/network toggle ═════════════════════════════ */
+.onto-toggle { position: absolute; top: 78px; left: 292px;
+  z-index: 46; font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+  color: var(--crimson); cursor: pointer; pointer-events: auto; text-transform: uppercase; }
+.onto-toggle:hover { color: #fff; }
