@@ -51,14 +51,15 @@ export default function MapView() {
     new GeoJsonLayer({ id: 'borders', data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'coast', data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
     // ring-domes (flat analogue of the globe's hemisphere domes)
+    // crimson strike-rings — thin fill, thicker stroke, less bulky
     new ScatterplotLayer({
-      id: 'domes', data: domes, stroked: true, filled: true, radiusUnits: 'meters',
-      lineWidthUnits: 'pixels', getLineWidth: 1, radiusMinPixels: 3, radiusMaxPixels: 90,
+      id: 'domes', data: domes, stroked: true, filled: false, radiusUnits: 'meters',
+      lineWidthUnits: 'pixels', getLineWidth: 1.4, lineWidthMinPixels: 1, lineWidthMaxPixels: 2.5,
+      radiusMinPixels: 2, radiusMaxPixels: 60,
       getPosition: (d: typeof domes[number]) => [d.lon, d.lat],
-      getRadius: (d: typeof domes[number]) => 40000 + Math.sqrt(hits[d.id] ?? 0) * 150000 + d.prominence * 12000,
-      getFillColor: (d: typeof domes[number]) => (d.id === sel ? [255, 190, 110, 40] : [235, 110, 30, 26]),
-      getLineColor: (d: typeof domes[number]) => (d.id === sel ? [255, 210, 140, 230] : [235, 120, 40, 150]),
-      updateTriggers: { getRadius: [now], getFillColor: [sel], getLineColor: [sel] },
+      getRadius: (d: typeof domes[number]) => 36000 + Math.sqrt(hits[d.id] ?? 0) * 125000 + d.prominence * 9000,
+      getLineColor: (d: typeof domes[number]) => (d.id === sel ? [255, 120, 120, 240] : [230, 0, 38, 125]),
+      updateTriggers: { getRadius: [now], getLineColor: [sel] },
     }),
     new ScatterplotLayer({
       id: 'nodes', data: insts, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 0.6,
@@ -68,6 +69,18 @@ export default function MapView() {
       onClick: (i: PickingInfo) => { if (i.object) engine.selectInstitution((i.object as { id: string }).id); return true; },
       onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `${(i.object as { name: string }).name}` } : null),
       updateTriggers: { getRadius: [now, sel], getFillColor: [sel] },
+    }),
+    // institution name labels — appear as you zoom in (targeted + selected only, to avoid clutter)
+    new TextLayer({
+      id: 'inst-labels',
+      data: vs.zoom >= 3.2 ? insts.filter((d) => (hits[d.id] ?? 0) > 0 || d.id === sel) : (sel ? insts.filter((d) => d.id === sel) : []),
+      getPosition: (d: typeof insts[number]) => [d.lon, d.lat],
+      getText: (d: typeof insts[number]) => d.name,
+      getSize: 9, sizeUnits: 'pixels',
+      getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [214, 220, 232, 205]),
+      fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      getPixelOffset: [5, 0], characterSet: 'auto',
+      updateTriggers: { getColor: [sel] },
     }),
     new ArcLayer({
       id: 'arcs', data: active, greatCircle: true, widthUnits: 'pixels',
