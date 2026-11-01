@@ -15,8 +15,7 @@ export default function TopBar() {
       <div className="panel brand">
         <span className="dot" />
         <div>
-          <div className="mark">CICFA · MONITOR</div>
-          <div className="sub">Cultural Infrastructure Critical Failure Attack<br />DWG-CICFA-01 · CRITICAL FAILURE WATCH</div>
+          <div className="mark">CICFA MONITOR</div>
         </div>
       </div>
       <div className="panel flex">

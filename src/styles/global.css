@@ -81,7 +81,7 @@ body {
 
 .brand { display: flex; flex-direction: column; gap: 1px; min-width: 300px; }
 .brand .dot { display: none; }
-.brand .mark { color: var(--crimson); font-weight: 700; letter-spacing: 4px; font-size: 11px; }
+.brand .mark { color: var(--ink); font-weight: 700; letter-spacing: 4px; font-size: 11px; }
 .brand .sub { color: var(--ink-dim); letter-spacing: 1px; }
 
 .topbar .flex { display: flex; flex-wrap: wrap; gap: 4px 22px; justify-content: flex-end; max-width: 60%; }
