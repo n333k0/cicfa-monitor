@@ -270,7 +270,7 @@ class Engine {
   setSpeed(v: number) { this.speed = v; this.notifyChange(); }
   selectInstitution(id: string | null) {
     this.selectedInstitution = id; this.selectedAgent = null;
-    if (id) { const x = INSTITUTION_INDEX[id]; if (x) this.flyTarget = { lon: x.lon, lat: x.lat, zoom: this.viewMode === 'globe' ? 2.6 : 4.2, at: performance.now() }; }
+    if (id) { const x = INSTITUTION_INDEX[id]; if (x) this.flyTarget = { lon: x.lon, lat: x.lat, zoom: this.viewMode === 'globe' ? 2.6 : 12.5, at: performance.now() }; }
     this.notifyChange();
   }
   setViewMode(m: ViewMode) { this.viewMode = m; this.selectedInstitution = null; this.notifyChange(); }

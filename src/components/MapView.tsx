@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { MapView as DeckMapView, LinearInterpolator, WebMercatorViewport } from '@deck.gl/core';
+import { MapView as DeckMapView, FlyToInterpolator, WebMercatorViewport } from '@deck.gl/core';
 import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
 import type { PickingInfo } from '@deck.gl/core';
 
@@ -13,10 +13,11 @@ import borders from '../data/borders.json';
 import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
+import { cityLayer } from './cityLayer';
 import type { AttackEvent } from '../sim/types';
 
 // FLAT view: pure thin-line minimal map on black (no basemap tiles / fills / labels).
-const transition = new LinearInterpolator(['longitude', 'latitude', 'zoom']);
+const transition = new FlyToInterpolator({ speed: 1.6 });
 
 function graticule() {
   const feats: GeoJSON.Feature[] = [];
@@ -38,8 +39,14 @@ export default function MapView() {
   useEffect(() => {
     const t = engine.consumeFlyTarget();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (t) setVs((v: any) => ({ ...v, longitude: t.lon, latitude: t.lat, zoom: t.zoom, transitionDuration: 1200, transitionInterpolator: transition }));
+    if (t) setVs((v: any) => ({ ...v, longitude: t.lon, latitude: t.lat, zoom: t.zoom, transitionDuration: 'auto', transitionInterpolator: transition }));
   }, [snap.selectedInstitution, snap.version]);
+
+  // console / exhibition hook: CICFA_view(lon, lat, zoom) moves the camera
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).CICFA_view = (longitude: number, latitude: number, zoom: number) => setVs((v: any) => ({ ...v, longitude, latitude, zoom, transitionDuration: 0 }));
+  }, []);
 
   const now = engine.clock;
   const active = engine.getActive().filter((e) => engine.passesFilter(e));
@@ -51,34 +58,43 @@ export default function MapView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const domes = useMemo(() => insts.filter((d) => (hits[d.id] ?? 0) > 0), [insts, hits]);
   // labels: only what is on screen. zoom ≥ 4.6 names every institution, ≥ 3.2 only those under attack.
-  const zq = Math.round(vs.zoom * 4) / 4, lonq = Math.round(vs.longitude * 2) / 2, latq = Math.round(vs.latitude * 2) / 2;
+  const zq = Math.round(vs.zoom * 4) / 4;
+  const qstep = (360 / (512 * 2 ** zq)) * 40;                 // re-place labels every ~40px of panning
+  const lonq = Math.round(vs.longitude / qstep) * qstep, latq = Math.round(vs.latitude / qstep) * qstep;
   const labels = useMemo(() => {
-    if (zq < 3.2) return sel ? insts.filter((d) => d.id === sel) : [];
+    if (zq < 3.2) return sel ? insts.filter((d) => d.id === sel).map((d) => ({ ...d, dy: 0 })) : [];
     const W = window.innerWidth, H = window.innerHeight;
     const vp = new WebMercatorViewport({ width: W, height: H, longitude: lonq, latitude: latq, zoom: zq });
     const all = zq >= 4.6;
     const prio = (d: typeof insts[number]) => (d.id === sel ? 1e9 : (hits[d.id] ?? 0) * 10 + d.prominence);
     const cand = insts.filter((d) => all || (hits[d.id] ?? 0) > 0 || d.id === sel).sort((a, b) => prio(b) - prio(a));
     // screen-space declutter: greedy placement, skip any label whose box overlaps one already placed
+    // close to a city, crowded names are stacked (nudged up/down) instead of hidden
+    const tries = zq >= 9 ? [0, 13, -13, 26, -26, 39, -39, 52, -52, 65, -65] : [0];
     const placed: [number, number, number, number][] = [];
-    const out: typeof insts = [];
+    const out: (typeof insts[number] & { dy: number })[] = [];
     for (const d of cand) {
       const dl = ((d.lon - lonq + 540) % 360) - 180;          // nearest world copy
       const [x, y] = vp.project([lonq + dl, d.lat]);
       if (x < -20 || x > W + 20 || y < -10 || y > H + 10) continue;
-      const box: [number, number, number, number] = [x + 3, y - 8, x + 8 + d.name.length * 6.8, y + 8];
-      if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
-      placed.push(box); out.push(d);
+      for (const dy of tries) {
+        const box: [number, number, number, number] = [x + 3, y + dy - 7, x + 8 + d.name.length * 6.8, y + dy + 7];
+        if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+        placed.push(box); out.push({ ...d, dy });
+        break;
+      }
       if (out.length >= 300) break;
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zq, lonq, latq, insts, hits, sel]);
 
+  const worldFade = Math.max(0, Math.min(1, (10 - vs.zoom) / 2.5));   // crude world outlines give way to real streets
   const layers = [
-    new GeoJsonLayer({ id: 'graticule', data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
-    new GeoJsonLayer({ id: 'borders', data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
-    new GeoJsonLayer({ id: 'coast', data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
+    cityLayer(vs.zoom),
+    new GeoJsonLayer({ id: 'graticule', opacity: worldFade, visible: worldFade > 0, data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
+    new GeoJsonLayer({ id: 'borders', opacity: worldFade, visible: worldFade > 0, data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
+    new GeoJsonLayer({ id: 'coast', opacity: worldFade, visible: worldFade > 0, data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
     // ring-domes (flat analogue of the globe's hemisphere domes)
     // crimson strike-rings — thin fill, thicker stroke, less bulky
     new ScatterplotLayer({
@@ -91,7 +107,7 @@ export default function MapView() {
       updateTriggers: { getRadius: [snap.version], getLineColor: [sel] },
     }),
     new ScatterplotLayer({
-      id: 'nodes', data: insts, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 0.6,
+      id: 'nodes', data: insts, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 0.6, radiusScale: vs.zoom >= 9 ? 2.4 : vs.zoom >= 6 ? 1.6 : 1,
       getPosition: (d: typeof insts[number]) => [d.lon, d.lat],
       getRadius: (d: typeof insts[number]) => (d.id === sel ? 2.2 : 0.7 + Math.min(1.2, (hits[d.id] ?? 0) * 0.06)),
       getFillColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [205, 212, 228, 235]),
@@ -108,7 +124,7 @@ export default function MapView() {
       getSize: 11, sizeUnits: 'pixels',
       getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : (hits[d.id] ?? 0) > 0 ? [235, 238, 245, 225] : [160, 168, 184, 150]),
       fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
-      getPixelOffset: [5, 0], characterSet: 'auto',
+      getPixelOffset: (d: { dy: number }) => [6, d.dy], characterSet: 'auto',
       updateTriggers: { getColor: [sel, snap.version] },
     }),
     new ArcLayer({
@@ -159,6 +175,7 @@ export default function MapView() {
         layers={layers}
       />
       {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}</div>}
+      <div className="map-shade" />
       <div className="map-grain" />
       <div className="map-vignette" />
       <div className="map-scanlines" />

@@ -63,6 +63,7 @@ export function installGlobalBridge() {
     pause: () => engine.setRunning(false),
     resume: () => engine.setRunning(true),
     speed: (n: number) => engine.setSpeed(n),
+    select: (id: string | null) => engine.selectInstitution(id),
     attachWebSocketFeed,
   };
 }

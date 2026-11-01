@@ -241,3 +241,9 @@ body {
   z-index: 46; font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
   color: var(--crimson); cursor: pointer; pointer-events: auto; text-transform: uppercase; }
 .onto-toggle:hover { color: #fff; }
+
+/* soft dark falloff behind the side columns so map labels never fight panel text (no boxes, just shade) */
+.map-shade { position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.82) 0, rgba(0,0,0,0.7) 350px, rgba(0,0,0,0) 440px),
+    linear-gradient(to left, rgba(0,0,0,0.82) 0, rgba(0,0,0,0.7) 400px, rgba(0,0,0,0) 490px); }
