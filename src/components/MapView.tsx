@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DeckGL from '@deck.gl/react';
-import { MapView as DeckMapView, LinearInterpolator } from '@deck.gl/core';
+import { MapView as DeckMapView, LinearInterpolator, WebMercatorViewport } from '@deck.gl/core';
 import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer } from '@deck.gl/layers';
 import type { PickingInfo } from '@deck.gl/core';
+
 
 import { INSTITUTIONS } from '../data/institutions';
 import { AGENTS } from '../data/agents';
@@ -30,7 +31,8 @@ export default function MapView() {
   const snap = useEngine();
   useFrame();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [vs, setVs] = useState<any>({ longitude: 10, latitude: 28, zoom: 1.55, pitch: 0, bearing: 0 });
+  // fit exactly one world to the screen width so the map never shows a wrapped duplicate on load
+  const [vs, setVs] = useState<any>(() => ({ longitude: -8, latitude: 4, zoom: Math.max(1.2, Math.log2(window.innerWidth / 512)), pitch: 0, bearing: 0 }));
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 
   useEffect(() => {
@@ -43,8 +45,35 @@ export default function MapView() {
   const active = engine.getActive().filter((e) => engine.passesFilter(e));
   const hits = snap.hits;
   const sel = snap.selectedInstitution;
-  const insts = INSTITUTIONS.filter((d) => snap.filters.regions.has(d.region));
-  const domes = insts.filter((d) => (hits[d.id] ?? 0) > 0);
+  // memoised per data tick (~4Hz), not per animation frame — avoids re-uploading 2,700+ points every frame
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const insts = useMemo(() => INSTITUTIONS.filter((d) => snap.filters.regions.has(d.region)), [snap.version]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const domes = useMemo(() => insts.filter((d) => (hits[d.id] ?? 0) > 0), [insts, hits]);
+  // labels: only what is on screen. zoom ≥ 4.6 names every institution, ≥ 3.2 only those under attack.
+  const zq = Math.round(vs.zoom * 4) / 4, lonq = Math.round(vs.longitude * 2) / 2, latq = Math.round(vs.latitude * 2) / 2;
+  const labels = useMemo(() => {
+    if (zq < 3.2) return sel ? insts.filter((d) => d.id === sel) : [];
+    const W = window.innerWidth, H = window.innerHeight;
+    const vp = new WebMercatorViewport({ width: W, height: H, longitude: lonq, latitude: latq, zoom: zq });
+    const all = zq >= 4.6;
+    const prio = (d: typeof insts[number]) => (d.id === sel ? 1e9 : (hits[d.id] ?? 0) * 10 + d.prominence);
+    const cand = insts.filter((d) => all || (hits[d.id] ?? 0) > 0 || d.id === sel).sort((a, b) => prio(b) - prio(a));
+    // screen-space declutter: greedy placement, skip any label whose box overlaps one already placed
+    const placed: [number, number, number, number][] = [];
+    const out: typeof insts = [];
+    for (const d of cand) {
+      const dl = ((d.lon - lonq + 540) % 360) - 180;          // nearest world copy
+      const [x, y] = vp.project([lonq + dl, d.lat]);
+      if (x < -20 || x > W + 20 || y < -10 || y > H + 10) continue;
+      const box: [number, number, number, number] = [x + 3, y - 8, x + 8 + d.name.length * 6.8, y + 8];
+      if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+      placed.push(box); out.push(d);
+      if (out.length >= 300) break;
+    }
+    return out;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [zq, lonq, latq, insts, hits, sel]);
 
   const layers = [
     new GeoJsonLayer({ id: 'graticule', data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
@@ -59,7 +88,7 @@ export default function MapView() {
       getPosition: (d: typeof domes[number]) => [d.lon, d.lat],
       getRadius: (d: typeof domes[number]) => 36000 + Math.sqrt(hits[d.id] ?? 0) * 125000 + d.prominence * 9000,
       getLineColor: (d: typeof domes[number]) => (d.id === sel ? [255, 120, 120, 240] : [230, 0, 38, 125]),
-      updateTriggers: { getRadius: [now], getLineColor: [sel] },
+      updateTriggers: { getRadius: [snap.version], getLineColor: [sel] },
     }),
     new ScatterplotLayer({
       id: 'nodes', data: insts, pickable: true, radiusUnits: 'pixels', radiusMinPixels: 0.6,
@@ -68,19 +97,19 @@ export default function MapView() {
       getFillColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [205, 212, 228, 235]),
       onClick: (i: PickingInfo) => { if (i.object) engine.selectInstitution((i.object as { id: string }).id); return true; },
       onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `${(i.object as { name: string }).name}` } : null),
-      updateTriggers: { getRadius: [now, sel], getFillColor: [sel] },
+      updateTriggers: { getRadius: [snap.version, sel], getFillColor: [sel] },
     }),
     // institution name labels — appear as you zoom in (targeted + selected only, to avoid clutter)
     new TextLayer({
       id: 'inst-labels',
-      data: vs.zoom >= 3.2 ? insts.filter((d) => (hits[d.id] ?? 0) > 0 || d.id === sel) : (sel ? insts.filter((d) => d.id === sel) : []),
+      data: labels,
       getPosition: (d: typeof insts[number]) => [d.lon, d.lat],
-      getText: (d: typeof insts[number]) => d.name,
+      getText: (d: typeof insts[number]) => d.name.toUpperCase(),
       getSize: 11, sizeUnits: 'pixels',
-      getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [214, 220, 232, 205]),
+      getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : (hits[d.id] ?? 0) > 0 ? [235, 238, 245, 225] : [160, 168, 184, 150]),
       fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
       getPixelOffset: [5, 0], characterSet: 'auto',
-      updateTriggers: { getColor: [sel] },
+      updateTriggers: { getColor: [sel, snap.version] },
     }),
     new ArcLayer({
       id: 'arcs', data: active, greatCircle: true, widthUnits: 'pixels',

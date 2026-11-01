@@ -5,10 +5,8 @@ const errs = [];
 p.on('pageerror', (e) => errs.push(e.message));
 await p.goto(process.env.URL || 'http://localhost:5273', { waitUntil: 'domcontentloaded' });
 await p.waitForTimeout(6000);
-await p.getByText('FLAT', { exact: true }).first().click();
-await p.waitForTimeout(2500);
-await p.mouse.move(855, 365);
-for (let i = 0; i < 5; i++) { await p.mouse.wheel(0, -300); await p.waitForTimeout(220); }
+await p.mouse.move(+(process.env.ZX || 855), +(process.env.ZY || 365));
+for (let i = 0; i < +(process.env.STEPS || 5); i++) { await p.mouse.wheel(0, -300); await p.waitForTimeout(220); }
 await p.waitForTimeout(3500);
 await p.screenshot({ path: 'preview-overview.png' });
 console.log('ERRORS', errs.length);

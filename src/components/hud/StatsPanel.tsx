@@ -17,12 +17,12 @@ export default function StatsPanel() {
           <div className="tile"><div className="k">Exposed</div><div className="v" style={{ color: 'var(--magenta)' }}>{s.byOutcome.exposed}</div></div>
           <div className="tile"><div className="k">Contained</div><div className="v amber">{s.byOutcome.contained}</div></div>
           <div className="tile"><div className="k">Blocked</div><div className="v green">{s.byOutcome.blocked}</div></div>
-          <div className="tile"><div className="k">Exfiltrated</div><div className="v" style={{ color: 'var(--magenta)', fontSize: 14 }}>{fmtBytes(s.bytesExfil)}</div></div>
+          <div className="tile"><div className="k">Exfiltrated</div><div className="v" style={{ color: 'var(--magenta)' }}>{fmtBytes(s.bytesExfil)}</div></div>
           <div className="tile"><div className="k">Ops / min</div><div className="v cyan">{s.perMin}</div></div>
         </div>
 
         <hr className="hair" />
-        <div className="mini" style={{ marginBottom: 5 }}>Vector distribution · click to filter</div>
+        <div className="mini" style={{ margin: '14px 0 5px' }}>Vector distribution · click to filter</div>
         {ALL_VECTORS.map((v) => {
           const def = VECTORS[v];
           const n = s.byVector[v];
