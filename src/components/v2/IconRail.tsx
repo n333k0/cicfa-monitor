@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { engine } from '../../sim/engine';
 import { useEngine } from '../../sim/useEngine';
-import { IconGlobe, IconIndex, IconMap, IconNetwork, IconPause, IconPlay, IconSat, IconTilt } from './icons';
+import { IconGlobe, IconIndex, IconMap, IconNetwork, IconSat, IconTilt } from './icons';
 
 function Btn({ on, label, onClick, children }: { on?: boolean; label: string; onClick: () => void; children: ReactNode }) {
   return <button className={`rail-btn ${on ? 'on' : ''}`} onClick={onClick} aria-label={label}>{children}<span className="rail-tip">{label}</span></button>;
@@ -29,7 +29,6 @@ export default function IconRail({ onIndex }: { onIndex: () => void }) {
       {flat && <Btn on={map.sat} label="Satellite (S)" onClick={() => w.CICFA_sat?.()}><IconSat /></Btn>}
       {flat && <Btn on={map.tilt} label="Tilt (T)" onClick={() => w.CICFA_tilt?.()}><IconTilt /></Btn>}
       <Btn label="Master index" onClick={onIndex}><IconIndex /></Btn>
-      <Btn label={snap.running ? 'Hold simulation' : 'Resume simulation'} onClick={() => engine.toggleRunning()}>{snap.running ? <IconPause /> : <IconPlay />}</Btn>
     </div>
   );
 }

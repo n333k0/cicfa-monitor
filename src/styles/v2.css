@@ -109,7 +109,8 @@ html.v2 .rs-head { color: var(--ink); font-size: 12px; font-weight: 700; text-tr
 html.v2 .rs-body { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%); mask-image: linear-gradient(to bottom, transparent, #000 5%); }
 html.v2 .rs-line, html.v2 .rs-line .op, html.v2 .rs-line .tg { color: var(--ink); font-size: 9px; }
 
-/* dock */
+/* dock (v2 hides the hold / speed controls — no simulation wording or controls in this edition) */
+html.v2 .transport .btn.primary, html.v2 .transport .spd { display: none; }
 html.v2 .dock { left: var(--m); right: var(--m); bottom: 28px; }
 html.v2 .ticker .rail span { color: var(--ink-faint); } html.v2 .ticker .rail b { color: var(--ink); }
 html.v2 .bytes { color: var(--ink); } html.v2 .bytes b { color: var(--ink); font-weight: 700; }

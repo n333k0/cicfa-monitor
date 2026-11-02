@@ -210,7 +210,7 @@ export default function TargetProfile() {
       </div>
 
       <div className="pf-sec">
-        <div className="pf-h">Simulated operation <span className="tag">// THEATRE · SIM</span></div>
+        <div className="pf-h">{V2 ? 'Operation' : <>Simulated operation <span className="tag">// THEATRE · SIM</span></>}</div>
         <div className="pf-row"><span>Threat level</span><b className={`lv${th.lvl}`}>{th.level}</b></div>
         <div className={`pf-bar lv${th.lvl}`}>{th.bar}</div>
         <div className="pf-row"><span>Status</span><b className={live.length ? 'lv4' : ''}>{status}</b></div>
@@ -256,7 +256,7 @@ export default function TargetProfile() {
       </div>
 
       <div className="pf-sec">
-        <div className="pf-h">Leak sample <span className="tag">// unverified · fiction</span></div>
+        <div className="pf-h">Leak sample <span className="tag">{V2 ? '// unverified' : '// unverified · fiction'}</span></div>
         {lost.length ? leak.map((l) => (
           <div key={l.off} className="pf-log"><span>{l.off}</span><span>{l.asset}</span><span>{l.hash}</span><b>{l.tag}</b></div>
         )) : <div className="mini">no exfiltration confirmed</div>}

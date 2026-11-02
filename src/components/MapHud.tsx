@@ -5,6 +5,7 @@
 // lives in the layers underneath. Inspired by bilawalsidhu/gods-eye-view.
 import { useEffect, useMemo, useState } from 'react';
 import { forward } from 'mgrs';
+import { V2 } from '../theme';
 
 const TICKER = [
   'REFRESHING LIVE DATA // SATELLITE',
@@ -49,7 +50,7 @@ export default function MapHud({ lon, lat, zoom, sat, onSat, tilt, onTilt }: Pro
       {/* classification strip, top of the map band */}
       <div className="ghud-class">
         <span className="ghud-rec"><i /> REC {clock}</span>
-        <span className="ghud-cls">CICFA // SI-TK // DWG-CICFA-01 · OPTICAL · NOFORN · SIMULATION</span>
+        <span className="ghud-cls">CICFA // SI-TK // DWG-CICFA-01 · OPTICAL · NOFORN{V2 ? '' : ' · SIMULATION'}</span>
         <span className="ghud-tick">{TICKER[tick % TICKER.length]}</span>
       </div>
 
