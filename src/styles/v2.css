@@ -169,18 +169,20 @@ html.v2 .pf-realblock { border-left-color: rgba(236, 233, 226, 0.25); }
 html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacing: 0; }
 
 /* ── master index overlay (the book spread) ─────────────────────────────── */
-.mindex { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: grid; grid-template-columns: 1fr 1fr;
+.mindex { position: fixed; inset: 0; z-index: 90; position: fixed; background: var(--bg); display: grid; grid-template-columns: 1fr 1fr;
   cursor: default; font-family: var(--sans); }
 .mi-page { position: relative; padding: 36px 40px 30px 48px; display: flex; flex-direction: column; min-width: 0; }
 .mi-page + .mi-page { border-left: 1px solid #1c1c1c; }
-.mi-head { display: flex; align-items: baseline; gap: 18px; font-size: 9px; margin-bottom: 22px; }
-.mi-head > b { font-weight: 700; }
-.mi-ctl { display: inline-flex; gap: 10px; align-items: baseline; margin-left: auto; margin-right: 40px; font-size: 10px; }
-.mi-ctl i { font-style: normal; color: var(--grey); } .mi-ctl b { font-weight: 400; }
-.mi-arrow, .mi-close { background: none; border: 0; color: var(--ink); cursor: pointer; font-size: 10px; padding: 0; }
+.mi-head { display: grid; grid-template-columns: 150px minmax(0, 1fr); font-size: 9px; margin-bottom: 22px; }
+.mi-headrow { display: flex; justify-content: space-between; align-items: baseline; }
+.mi-headrow > b { font-weight: 700; }
+/* spread pager: centred across the two pages, on the header line */
+.mi-pager { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: 10px;
+  align-items: baseline; font-size: 10px; line-height: 1; background: var(--bg); padding: 0 12px; }
+.mi-pager i { font-style: normal; color: var(--grey); } .mi-pager b { font-weight: 400; }
+.mi-arrow, .mi-close { background: none; border: 0; color: var(--ink); cursor: pointer; font-size: 10px; line-height: 1; padding: 0; }
 .mi-arrow:disabled { color: var(--grey); cursor: default; }
-.mi-close { position: absolute; top: 34px; right: 40px; }
-.mi-folio { margin-left: auto; margin-right: 34px; font-size: 9px; }
+.mi-folio { font-size: 9px; }
 .mi-folio.bottom { position: absolute; right: 40px; bottom: 30px; }
 .mi-body { display: grid; grid-template-columns: 150px minmax(0, 1fr); min-height: 0; }
 .mi-side b { font-size: 9px; font-weight: 700; }
@@ -188,7 +190,7 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
 .mi-row { display: grid; grid-template-columns: 24px 44px minmax(0, 1fr) 132px 74px; gap: 0 8px; align-items: baseline;
   font-size: 7.6px; line-height: 9.1px; color: var(--ink); white-space: nowrap; }
 .mi-row > span { overflow: hidden; text-overflow: ellipsis; }
-.mi-n { text-align: right; font-size: 6.4px; } .mi-r { font-size: 6.4px; }
+.mi-n { font-size: 6.4px; } .mi-r { font-size: 6.4px; }
 .mi-cat, .mi-h { font-size: 6.4px; }
 .mi-h.hit { color: var(--crimson); }
 .mi-row.clk:hover { padding-left: 0 !important; }
@@ -261,8 +263,10 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   html.v2 .mi-row { grid-template-columns: 26px 46px minmax(0, 1fr) 64px; font-size: 9.5px; line-height: 16px; }
   html.v2 .mi-n, html.v2 .mi-r, html.v2 .mi-h { font-size: 8px; }
   html.v2 .mi-cat { display: none; }
-  html.v2 .mi-ctl { margin-right: 36px; font-size: 11px; gap: 14px; }
+  html.v2 .mi-pager { position: sticky; top: 0; left: auto; transform: none; justify-content: center; padding: 14px 0 10px; font-size: 11px; gap: 14px; }
+  html.v2 .mi-head { grid-template-columns: 1fr; }
   html.v2 .mi-arrow { font-size: 13px; padding: 4px; }
-  html.v2 .mi-close { position: fixed; top: 14px; right: 16px; font-size: 14px; padding: 4px; z-index: 96; }
+  html.v2 .mi-close { position: fixed; top: 12px; right: 16px; font-size: 14px; padding: 4px; z-index: 96; }
+  html.v2 .mindex { display: block; }
   html.v2 .mi-folio.bottom { display: none; }
 }

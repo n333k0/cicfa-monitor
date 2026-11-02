@@ -34,16 +34,20 @@ export default function MasterIndex({ open, onClose }: { open: boolean; onClose:
 
   return (
     <div className="mindex" onClick={onClose}>
+      <div className="mi-pager" onClick={(e) => e.stopPropagation()}>
+        <button className="mi-arrow" disabled={spread === 0} onClick={() => setSpread((s) => s - 1)} aria-label="Previous spread">◂</button>
+        <span><b>{String(spread + 1).padStart(2, '0')}</b> <i>of {String(spreads).padStart(2, '0')}</i></span>
+        <button className="mi-arrow" disabled={spread >= spreads - 1} onClick={() => setSpread((s) => s + 1)} aria-label="Next spread">▸</button>
+      </div>
       {pages.map((rows, p) => (
         <div key={p} className="mi-page" onClick={(e) => e.stopPropagation()}>
+          {/* header on the same grid as the rows: title starts where the numbers start, ✕ ends where the text ends */}
           <div className="mi-head">
-            <b>CICFA Index</b>
-            {p === 1 ? <span className="mi-folio">{String(spread * 2 + 2).padStart(2, '0')}</span> : <span className="mi-ctl">
-              <button className="mi-arrow" disabled={spread === 0} onClick={() => setSpread((s) => s - 1)} aria-label="Previous spread">◂</button>
-              <span><b>{String(spread + 1).padStart(2, '0')}</b> <i>of {String(spreads).padStart(2, '0')}</i></span>
-              <button className="mi-arrow" disabled={spread >= spreads - 1} onClick={() => setSpread((s) => s + 1)} aria-label="Next spread">▸</button>
-            </span>}
-            {p === 1 && <button className="mi-close" onClick={onClose} aria-label="Close index">✕</button>}
+            <div className="mi-side" />
+            <div className="mi-headrow">
+              <b>CICFA Index</b>
+              {p === 1 && <button className="mi-close" onClick={onClose} aria-label="Close index">✕</button>}
+            </div>
           </div>
           <div className="mi-body">
             <div className="mi-side">{p === 0 && spread === 0 ? <b>Master Index</b> : null}</div>
@@ -62,7 +66,7 @@ export default function MasterIndex({ open, onClose }: { open: boolean; onClose:
               })}
             </div>
           </div>
-          {p === 0 && <span className="mi-folio bottom">{String(spread * 2 + 1).padStart(2, '0')}</span>}
+          <span className="mi-folio bottom">{String(spread * 2 + p + 1).padStart(2, '0')}</span>
         </div>
       ))}
     </div>
