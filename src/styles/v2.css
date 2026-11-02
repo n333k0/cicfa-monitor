@@ -209,7 +209,7 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
     --mh: calc(18px + var(--lh) * 18);                          /* logo block */
     --ic: 48px;                                                  /* icon row */
     --tb: calc(46px + env(safe-area-inset-bottom));              /* tab bar */
-    --top: calc(var(--mh) + var(--ic));                          /* sheets start under logo + icons */
+    --top: calc(var(--mh) + 36px);                               /* sheets start right under the lifted icons (icons tuck up to the logo) */
     --mt: calc(var(--tb) + var(--ic)); }
   /* full-width ASCII logo, no bar, no shadow, floating over everything (doesn't block the map) */
   html.v2 .mhead { display: block; position: fixed; top: 0; left: 0; right: 0; padding: 14px 16px 0; z-index: 72;
