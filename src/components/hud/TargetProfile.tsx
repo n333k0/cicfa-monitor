@@ -76,16 +76,27 @@ export default function TargetProfile() {
   const maxAgg = Math.max(1, ...aggressors.map((a) => a[1]));
   const blurb = inst.blurb ?? `${inst.kind} in ${inst.city}, ${inst.country}.`;
   const approx = inst.tags?.includes('approx-coords');
+  // ◂ ▸ step through the most-targeted list
+  const hot = snap.stats.topTargets.map((t) => t.id);
+  const k = hot.indexOf(inst.id);
+  const step = (dir: number) => { const ids = hot.length ? hot : [inst.id]; const j = k < 0 ? 0 : (k + dir + ids.length) % ids.length; engine.selectInstitution(ids[j]); };
 
   return (
     <div className={`profile panel ${full ? 'full' : ''}`}>
-      {V2 && <button className="pf-grip" onClick={() => setFull((f) => !f)} aria-label={full ? 'Collapse profile' : 'Expand profile'}><i />{full ? 'Show map' : 'Expand'}</button>}
+      {/* phones: sticky control bar — ◂ ▸ · Expand / Show map · ✕ stay reachable while scrolling */}
+      {V2 && (
+        <div className="pf-grip">
+          <span className="pg-nav">
+            <button onClick={() => step(-1)} aria-label="Previous target">◂</button>
+            <button onClick={() => step(1)} aria-label="Next target">▸</button>
+          </span>
+          <button className="pg-exp" onClick={() => setFull((f) => !f)} aria-label={full ? 'Collapse profile' : 'Expand profile'}><i />{full ? 'Show map' : 'Expand'}</button>
+          <button className="pg-x" onClick={() => engine.selectInstitution(null)} aria-label="Close profile">✕</button>
+        </div>
+      )}
       {V2 ? (() => {
         // Tomb header: counter · type line · big name, with ◂ ▸ stepping through the hot list
         const n = INSTITUTIONS.findIndex((d) => d.id === inst.id) + 1;
-        const hot = snap.stats.topTargets.map((t) => t.id);
-        const k = hot.indexOf(inst.id);
-        const step = (dir: number) => { const ids = hot.length ? hot : [inst.id]; const j = k < 0 ? 0 : (k + dir + ids.length) % ids.length; engine.selectInstitution(ids[j]); };
         return (
           <div className="pf2-head">
             <button className="pf2-arrow l" onClick={() => step(-1)} aria-label="Previous target">◂</button>

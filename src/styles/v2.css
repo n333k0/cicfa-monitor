@@ -254,11 +254,17 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   /* target profile = bottom sheet: the map above stays visible + tappable; grip expands it to full height */
   html.v2 .profile { position: fixed; top: auto; height: 50vh; bottom: var(--tb); left: 0; right: 0; width: auto; z-index: 66;
     padding: 0 16px 24px 30px; border-top: 1px solid #2a2a2a; transition: height 0.2s ease; }
-  html.v2 .profile.full { height: calc(100dvh - var(--top) - var(--tb)); }
-  html.v2 .pf-grip { display: flex; position: sticky; top: 0; z-index: 2; width: calc(100% + 46px); margin: 0 -16px 10px -30px;
-    height: 34px; align-items: center; justify-content: center; gap: 8px; background: var(--panel); border: 0;
-    color: var(--ink); opacity: 0.8; font: 700 9.5px var(--sans); text-transform: uppercase; cursor: pointer; }
-  html.v2 .pf-grip i { width: 30px; height: 3px; border-radius: 2px; background: var(--ink); opacity: 0.5; }
+  /* expanded = the whole screen, over logo, icons and tabs */
+  html.v2 .profile.full { top: 0; bottom: 0; height: auto; z-index: 80; border-top: 0; padding-top: env(safe-area-inset-top); }
+  html.v2 .pf-grip { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; position: sticky; top: 0; z-index: 2;
+    width: calc(100% + 46px); margin: 0 -16px 10px -30px; height: 44px; padding: 0 16px; background: var(--panel); }
+  html.v2 .pf-grip button { background: none; border: 0; color: var(--ink); cursor: pointer; padding: 6px; font: 400 13px var(--sans); line-height: 1; }
+  html.v2 .pg-nav { display: flex; gap: 6px; margin-left: -6px; }
+  html.v2 .pg-exp { display: flex; align-items: center; gap: 8px; font: 700 9.5px var(--sans) !important; text-transform: uppercase; opacity: 0.8; }
+  html.v2 .pg-exp i { width: 30px; height: 3px; border-radius: 2px; background: var(--ink); opacity: 0.5; }
+  html.v2 .pg-x { justify-self: end; margin-right: -6px; font-size: 15px !important; }
+  /* the in-header arrows / ✕ move into the bar on phones */
+  html.v2 .pf2-arrow, html.v2 .pf2-close { display: none; }
   html.v2 .pf2-name { font-size: 22px; }
   html.v2 .pf2-spec { grid-template-columns: repeat(2, 30px minmax(0, 1fr)); }
   /* master index = one scrolling column */
