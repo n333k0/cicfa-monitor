@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { V2 } from '../../theme';
 
 // Fast synthetic signal cascade (≈13 lines/sec) — the "text moving fast" layer,
 // in the spirit of the vault reference's streaming assembly dump. Pure theatre.
@@ -13,7 +14,7 @@ export default function RawStream() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const MAX = 46;
+    const MAX = V2 ? 64 : 46;   // v2: enough lines to fill the column top to bottom
     const id = window.setInterval(() => {
       const line = document.createElement('div');
       line.className = `rs-line${Math.random() > 0.82 ? ' hl' : ''}`;
