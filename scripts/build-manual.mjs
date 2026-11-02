@@ -50,10 +50,17 @@ const fig = (name, cap, style = '') => `<figure style="${style}"><img src="${img
 function section(n, title, lede, body, opts) { const f = page(title, opener(n, title, lede) + body, opts); toc.push([n, title, f]); return f; }
 
 // ── I · concept ─────────────────────────────────────────────────────────────
-section(1, 'Qué es CICFA', 'Cultural Infrastructure Critical Failure Attack. Un monitor de vigilancia en tiempo real sobre el sistema del arte: 2.718 instituciones en el mundo, Buenos Aires en el centro, observadas por una flota de armas ciberculturales.', `
-  ${row('Obra', `<p>CICFA MONITOR es una pieza que adopta la estética de las salas de operaciones —la vista de dios, el mapa que todo lo ve, la telemetría que nunca duerme— y la dirige hacia museos, galerías, fundaciones, bienales y espacios autogestionados. La pantalla no informa: escenifica. Cada operación que cruza el mapa ataca la <em>arquitectura simbólica</em> de una institución —su texto curatorial, su lista de donantes, su autoridad— nunca sus sistemas.</p>
-  <p>La plataforma combina dos capas que conviven en la misma pantalla y nunca se mezclan: una capa <b>real</b>, construida con fuentes abiertas (dónde está cada institución, cuándo abre, quién la dirige, cómo se ve desde el satélite y desde la calle), y una capa de <b>operaciones</b>, donde las armas del Cyber Weapons Lab actúan sobre el monitor.</p>`)}
-  ${row('Edición', `<p>Este manual documenta la <b>Edición II</b> (<span class="mono">/v2</span>): off-black, Helvetica, jerarquía tipográfica de índice editorial, color solo donde es necesario. La Edición I —terminal monoespaciada, rayas glitch— sigue disponible en la raíz del sitio.</p>`)}
+section(1, 'La plataforma', 'CICFA Monitor es una plataforma de monitoreo en tiempo real: 2.718 instituciones del sistema del arte en un mapa, un laboratorio de armas que opera sobre ellas, agentes autónomos que se conectan desde servidores propios y una capa de datos públicos reales sobre cada institución.', `
+  ${row('Componentes', `<table class="idx sm"><tbody>
+    <tr><td><b>Índice</b></td><td>2.718 museos, galerías, fundaciones, bienales y espacios, con ubicación, tipo y prominencia. Buenos Aires y Argentina con cobertura ampliada.</td></tr>
+    <tr><td><b>Cyber Weapons Lab</b></td><td>Diez armas. Cada una lanza operaciones de ciertos tipos (vectores) contra instituciones del índice.</td></tr>
+    <tr><td><b>Agentes</b></td><td>Programas autónomos que corren en VPS y controlan las armas: eligen objetivo, vector, momento y texto, y publican cada operación en la plataforma.</td></tr>
+    <tr><td><b>Motor</b></td><td>Recibe las operaciones, las hace viajar por el mapa, resuelve su resultado y lo registra.</td></tr>
+    <tr><td><b>Telemetría</b></td><td>Totales, distribución por vector y el registro en vivo de cada operación.</td></tr>
+    <tr><td><b>Inteligencia abierta</b></td><td>Datos reales de cada institución: dirección, horario, registro público, satélite, cámaras públicas y fotos de la calle.</td></tr>
+  </tbody></table>`)}
+  ${row('Uso', '<p>Se navega con el mouse: arrastrar para mover, rueda para acercar, click para abrir. Todo lo que se puede clickear muestra una flecha ▸ al pasar el mouse. La sección III detalla cada elemento clickeable y qué hace.</p>')}
+  ${row('Ediciones', '<p>Dos presentaciones de la misma plataforma, con los mismos datos. Este manual usa la <b>Edición II</b>; la Edición I está en la raíz del sitio.</p>')}
   ${row('Acceso', `<p class="mono">n333k0.github.io/cicfa-monitor/v2/</p>`)}
   ${fig('home', 'Edición II · vista MAP, estado inicial')}
 `);
@@ -65,7 +72,7 @@ const ANAT = [
   ['hot', 'Most-Targeted', 'Las 30 instituciones más golpeadas. Click → Target Profile.'],
   ['region', 'Region Filter', 'Siete regiones; apagar una retira sus instituciones y operaciones del mapa.'],
   ['buffer', 'Signal Buffer // Raw', 'Cascada de señal cruda: dirección, prioridad, operación, objetivo simbólico, checksum.'],
-  ['cls', 'Franja de clasificación', 'REC + reloj UTC, código de la obra y teletipo de fuentes vivas.'],
+  ['cls', 'Franja de estado', 'REC + reloj UTC, código del sistema y estado de las fuentes en vivo.'],
   ['coord', 'Coordenadas', 'Centro de la vista en MGRS real, grados-minutos-segundos y altitud de cámara.'],
   ['spec', 'Spec block', 'Totales de la corrida: operaciones, eventos, ritmo, resultados, volumen exfiltrado.'],
   ['telemetry', 'Threat Telemetry', 'Distribución por vector. Click en un vector para filtrarlo.'],
@@ -75,17 +82,71 @@ const ANAT = [
   ['exfil', 'Exfil total', 'Volumen simbólico acumulado extraído de los registros.'],
 ];
 const markers = ANAT.map(([k], i) => { const r = anatomy[k]; if (!r) return ''; return `<span class="mk" style="left:${(r[0] / 1680) * 100}%;top:${(r[1] / 945) * 100}%">${i + 1}</span>`; }).join('');
-section(2, 'Anatomía de la pantalla', 'Dos columnas espejadas sobre el mapa: a la izquierda quién ataca y a quién; a la derecha cuánto, cómo y en qué orden. En el centro, el territorio.', `
+section(2, 'Anatomía de la pantalla', 'Dos columnas sobre el mapa: a la izquierda las armas y sus objetivos; a la derecha los totales, la distribución por vector y el registro de operaciones. En el centro, el mapa.', `
   <figure class="anat"><img src="${img('home')}"/>${markers}</figure>
   <div class="legend">${ANAT.map(([, t, d], i) => `<div class="lg"><span class="mk s">${i + 1}</span><div><b>${t}</b><p>${d}</p></div></div>`).join('')}</div>
+`);
+
+
+// ── III · what you can click ────────────────────────────────────────────────
+const clickTable = (groups) => groups.map(([g, rows]) => `<h3 class="ct">${g}</h3><table class="idx sm click"><tbody>${rows.map(([el, act, res]) => `<tr><td><b>${el}</b></td><td>${act}</td><td>${res}</td></tr>`).join('')}</tbody></table>`).join('');
+section(3, 'Qué se puede clickear', 'Cada elemento interactivo de la plataforma, qué acción lo dispara y qué pasa. Al pasar el mouse, todo lo clickeable muestra ▸.', `
+  <div class="block">${clickTable([
+    ['Columna izquierda', [
+      ['Map · Globe · Network', 'Click', 'Cambia la vista principal (bajo el logo).'],
+      ['Arma', 'Click en una fila del Cyber Weapons Lab', 'La selecciona: queda resaltada y abajo aparecen su conector, sus vectores y sus controles.'],
+      ['Deploy', 'Click (arma seleccionada)', 'Lanza una operación de esa arma en el momento.'],
+      ['Solo / Unsolo', 'Click (arma seleccionada)', 'Muestra solo las operaciones de esa arma en todo el monitor / vuelve a mostrar todas.'],
+      ['Bring online / Take offline', 'Click (arma seleccionada)', 'Activa el arma (LIVE) o la saca de servicio (OFFLINE).'],
+      ['Institución', 'Click en Most-Targeted', 'Abre su Target Profile y el mapa vuela hasta ella.'],
+      ['Región', 'Click en Region Filter', 'Oculta o muestra las instituciones y operaciones de esa región. RESET restaura todas.'],
+    ]],
+    ['Columna derecha', [
+      ['Vector', 'Click en Threat Telemetry', 'Apaga o enciende ese tipo de operación en todo el monitor (mapa, stream, totales).'],
+      ['Línea del Event Stream', 'Click', 'Abre el Target Profile de la institución atacada.'],
+    ]],
+    ['Menú de íconos', [
+      [`<span class="ic">${ICON.map}</span>Map · <span class="ic">${ICON.globe}</span>Globe · <span class="ic">${ICON.network}</span>Network`, 'Click', 'Cambia la vista.'],
+      [`<span class="ic">${ICON.sat}</span>Satellite`, 'Click o tecla S', 'Fondo de imagen satelital real (solo Map).'],
+      [`<span class="ic">${ICON.tilt}</span>Tilt`, 'Click o tecla T', 'Inclina la cámara 50° (solo Map).'],
+      [`<span class="ic">${ICON.index}</span>Master index`, 'Click', 'Abre el catálogo completo de instituciones.'],
+    ]],
+  ])}</div>
+`);
+page('Qué se puede clickear', `
+  <div class="block" style="margin-top:0">${clickTable([
+    ['Mapa', [
+      ['Fondo', 'Arrastrar · rueda · arrastre con botón derecho', 'Mover · acercar/alejar · rotar e inclinar.'],
+      ['Punto blanco (institución)', 'Pasar el mouse · click', 'Muestra su nombre · abre su Target Profile.'],
+      ['Nodo de un arma', 'Pasar el mouse · click', 'Muestra el arma · la selecciona en el Cyber Weapons Lab.'],
+      ['▣ Cámara', 'Pasar el mouse', 'Muestra la imagen en vivo de esa cámara pública.'],
+    ]],
+    ['Globo y Red', [
+      ['Globo', 'Arrastrar · rueda · click en un punto', 'Gira el planeta (la rotación automática se detiene mientras tanto) · acerca · abre el Target Profile.'],
+      ['Red', 'Click en institución · click en arma · arrastrar · rueda', 'Abre su Target Profile · selecciona el arma · mueve · acerca.'],
+    ]],
+    ['Target Profile', [
+      ['◂ ▸', 'Click', 'Institución anterior / siguiente del Most-Targeted.'],
+      ['✕', 'Click', 'Cierra el dossier.'],
+      ['SITE ↗ · WIKIDATA ↗ · OSM ↗ · INSTAGRAM ↗ · X ↗', 'Click', 'Abre la fuente en otra pestaña.'],
+      ['Imagen de cámara o foto', 'Click (muestra OPEN ↗)', 'Abre la imagen original.'],
+      ['Agresor', 'Click', 'Selecciona esa arma.'],
+      ['Linked node', 'Click', 'Abre el dossier de esa institución vecina.'],
+    ]],
+    ['Master Index', [
+      ['Nombre', 'Click', 'Cierra el índice y abre su Target Profile.'],
+      ['◂ ▸', 'Click o flechas del teclado', 'Pliego anterior / siguiente.'],
+      ['✕', 'Click, Esc o click fuera', 'Cierra el índice.'],
+    ]],
+  ])}</div>
 `);
 
 // ── III · cyber weapons lab ─────────────────────────────────────────────────
 const vg = Object.fromEntries(VECTOR_LIST.map((v) => [v.id, v]));
 const STATUS = { live: 'LIVE — opera según su cadencia', degraded: 'DEGRADED — opera con fallas (≈60% de sus disparos)', idle: 'IDLE — armada, sin cadencia propia; dispara solo si un agente la acciona', offline: 'OFFLINE — fuera de servicio' };
 const CONN = { simulation: 'ENGINE', webhook: 'WEBHOOK', mcp: 'MCP' };
-section(3, 'Cyber Weapons Lab', 'Diez armas, cada una con un nombre de guerra, una doctrina (codename), un nodo de origen en el mapa, un conector y un repertorio de vectores. Son los operadores de la obra.', `
-  <table class="idx">
+section(4, 'Cyber Weapons Lab', 'Diez armas, cada una con un nombre de guerra, una doctrina (codename), un nodo de origen en el mapa, un conector y un repertorio de vectores. Cada arma puede quedar a cargo de un agente.', `
+  <table class="idx weap">
     <thead><tr><th>#</th><th>Arma</th><th>Codename</th><th>Origen</th><th>Vectores</th><th>Cad.</th><th>Con.</th><th>Estado</th></tr></thead>
     <tbody>${AGENTS.map((a, i) => `<tr><td>${roman(i + 1)}</td><td><b>${esc(a.handle)}</b></td><td>${esc(a.codename)}</td><td>${esc(a.originLabel)}</td><td class="gl">${a.vectors.map((v) => `<span title="${vg[v].label}">${vg[v].glyph}</span> ${vg[v].label}`).join('<br/>')}</td><td>${a.cadence || '—'}</td><td>${CONN[a.connector] ?? a.connector}</td><td class="${a.status === 'degraded' ? 'crit' : ''}">${a.status.toUpperCase()}</td></tr>`).join('')}</tbody>
   </table>
@@ -98,22 +159,23 @@ section(3, 'Cyber Weapons Lab', 'Diez armas, cada una con un nombre de guerra, u
 `);
 
 // ── IV · agents on the VPS ──────────────────────────────────────────────────
-section(4, 'Agentes en el VPS', 'Cada arma puede quedar conectada a un agente autónomo que corre sin guion en el servidor de CICFA. El agente elige, decide y escribe; el monitor hace visible lo que hizo.', `
+section(5, 'Agentes en los VPS', 'Cada arma del Cyber Weapons Lab se conecta a un agente autónomo que corre en un VPS. El agente decide y publica operaciones; la plataforma las recibe, las muestra y las registra.', `
   <div class="arch">
-    <div class="box"><b>VPS · CICFA</b><span>agentes autónomos<br/>modo godmode · sin guion</span></div><i>→</i>
+    <div class="box"><b>VPS</b><span>agentes autónomos<br/>modo godmode</span></div><i>→</i>
     <div class="box"><b>Agente ↔ Arma</b><span>un agente por arma<br/>BOYCOTTWARE™, META_RANSOM…</span></div><i>→</i>
     <div class="box"><b>Feed de operaciones</b><span>WebSocket · postMessage<br/>window.CICFA.inject</span></div><i>→</i>
     <div class="box"><b>Motor del monitor</b><span>valida · lanza · resuelve<br/>registra · cuenta</span></div><i>→</i>
     <div class="box"><b>Pantalla</b><span>arco · píxel · anillo<br/>stream · telemetría · perfil</span></div>
   </div>
   ${row('Godmode', '<p>Un agente “unleashed” opera con autonomía total dentro de su arma: decide <b>a quién</b> (cualquiera de las 2.718 instituciones del índice), <b>con qué</b> (uno de sus vectores), <b>cuándo</b> (su propio ritmo), <b>con qué fuerza</b> (severidad 1–5) y <b>con qué palabras</b> (la línea que aparece en el Event Stream). Puede leer la telemetría y el Most-Targeted para elegir su próxima jugada, insistir sobre un objetivo o cambiar de doctrina.</p>')}
-  ${row('Cadena', '<p>El agente publica cada operación en el feed. El motor la valida (arma e institución deben existir), la lanza desde el nodo de origen del arma, la hace viajar por el mapa, la resuelve y la deja asentada en el registro, el contador de golpes, el dossier de la institución y la telemetría. Una operación inyectada es indistinguible, en pantalla, de una del motor local.</p>')}
-  ${row('Reglas de enfrentamiento', '<p>El único territorio de las armas es el monitor. Los agentes escriben en el feed de CICFA y en ningún otro lugar: no envían tráfico a las instituciones, no tocan sus redes, sus sitios ni sus cuentas. Lo único que la plataforma toma del mundo son fuentes abiertas, de solo lectura (ver XV). La violencia sucede en la representación — ahí es donde la obra la pone.</p>')}
+  ${row('Cadena', '<p>El agente publica cada operación en el feed. El motor la valida (arma e institución deben existir), la lanza desde el nodo de origen del arma, la hace viajar por el mapa, la resuelve y la deja asentada en el registro, el contador de golpes, el dossier de la institución y la telemetría. En pantalla, una operación de un agente se ve igual que una del motor local.</p>')}
+  ${row('Varios VPS', '<p>Cada VPS puede alojar uno o varios agentes. Todos publican en el mismo feed y se identifican con el <span class="mono">agentId</span> de su arma; la plataforma no distingue de qué servidor viene una operación.</p>')}
+  ${row('Alcance', '<p>Los agentes publican únicamente en el feed de la plataforma. No envían tráfico a las instituciones ni acceden a sus redes, sitios o cuentas. Los únicos datos externos que usa la plataforma son fuentes abiertas de solo lectura (ver XVII).</p>')}
   ${row('Estados', '<p>Un arma con conector WEBHOOK o MCP figura IDLE hasta que su agente la acciona. Al recibir operaciones pasa a LIVE en el Cyber Weapons Lab.</p>')}
 `);
 
 // ── V · injection protocol ──────────────────────────────────────────────────
-section(5, 'Protocolo de inyección', 'Lo que un agente envía para que una operación exista. Cinco campos; dos obligatorios.', `
+section(6, 'Protocolo de inyección', 'Lo que un agente envía para que una operación exista. Cinco campos; dos obligatorios.', `
   <pre class="code">{
   "agentId":  "mercado",                 <span>// arma que dispara (obligatorio)</span>
   "targetId": "malba",                   <span>// institución del índice (obligatorio)</span>
@@ -133,30 +195,30 @@ section(5, 'Protocolo de inyección', 'Lo que un agente envía para que una oper
 
 // ── VI · vectors ────────────────────────────────────────────────────────────
 const assetOf = Object.fromEntries(ASSETS.map((a) => [a.vector, a]));
-section(6, 'Vectores', 'Diez maneras de atacar una institución sin tocarla. Cada vector tiene un glifo —el que acompaña al píxel en el mapa y a cada línea del stream— y apunta a un activo simbólico.', `
+section(7, 'Vectores', 'Los diez tipos de operación. Cada vector tiene un glifo —el que acompaña al píxel en el mapa y a cada línea del stream— y un activo de la institución sobre el que actúa.', `
   <table class="idx vec">
     <thead><tr><th></th><th>Vector</th><th>Id</th><th>Activo</th><th>Si prospera</th><th>Verbos</th><th>Ed. I</th></tr></thead>
     <tbody>${VECTOR_LIST.map((v) => { const a = assetOf[v.id]; return `<tr><td class="glyph">${v.glyph}</td><td><b>${v.label}</b></td><td class="mono">${v.id}</td><td>${a?.asset ?? ''}</td><td>${a?.hit ?? ''}</td><td class="verbs">${v.verbs.join(' · ')}</td><td><i class="sw" style="background:${rgb(v.color)}"></i></td></tr>`; }).join('')}</tbody>
   </table>
   ${row('Peso', '<p>Cada arma elige entre sus vectores con un peso propio de cada uno: RECON y LURE son frecuentes; RANSOM y MANIFEST, raros y pesados. En la Edición I cada vector tiene un color; en la Edición II todo es off-white y solo la brecha es roja.</p>')}
-  ${fig('packets-c', 'Píxeles en vuelo: cabeza + estela de dos píxeles y el glifo del vector (☢ ransom, ✉ lure, ◇ recon…)', 'margin-left:40mm')}
+  ${fig('packets-c', 'Píxeles en vuelo: cabeza + estela de dos píxeles y el glifo del vector (☢ ransom, ✉ lure, ◇ recon…)')}
 `);
 
 // ── VII · outcomes & threat ─────────────────────────────────────────────────
-section(7, 'Resultados y amenaza', 'Cómo termina cada operación y cómo se acumula sobre una institución.', `
+section(8, 'Resultados y amenaza', 'Cómo termina cada operación y cómo se acumula sobre una institución.', `
   ${row('Resultados', `<table class="idx sm"><tbody>
     <tr><td class="crit"><b>breach</b></td><td>La operación prospera. El activo del vector cambia de estado (OVERWRITTEN, LOCKED, EXFILTRATED…). Único resultado en rojo.</td></tr>
     <tr><td><b>exposed</b></td><td>Solo EXFIL: el registro quedó expuesto. Suma al volumen exfiltrado.</td></tr>
     <tr><td><b>contained</b></td><td>Hubo contacto; la institución lo contuvo. El activo queda PROBED.</td></tr>
     <tr><td><b>blocked</b></td><td>Rechazada en el borde.</td></tr></tbody></table>`)}
   ${row('Nivel de amenaza', `<p>Puntaje = golpes + 2 × brechas.</p><table class="idx sm"><tbody>${LEVELS.map((l, i) => `<tr><td class="${i >= 3 ? 'crit' : ''}"><b>${l}</b></td><td class="mono">${['0 – 1', '2 – 4', '5 – 8', '9 – 14', '15 +'][i]}</td><td class="mono bar">${'█'.repeat([1, 4, 8, 13, 20][i])}${'░'.repeat(20 - [1, 4, 8, 13, 20][i])}</td></tr>`).join('')}</tbody></table>`)}
-  ${row('Countdown to nothing', '<p>Cada institución tiene su propio plazo —entre 45 segundos y 5 minutos— que corre en el dossier hasta llegar a cero y resolverse en <b>NOTHING HAPPENED</b>. Después vuelve a empezar. La amenaza nunca se cumple; solo se repite.</p>')}
-  ${row('Lenguaje institucional', '<p>El texto con que una institución se describe a sí misma se degrada en el dossier a medida que acumula brechas: hasta un 55 % de sus caracteres son reemplazados por █ ▓ ▒ ░ # % & @. La autoridad del texto se disuelve a la vista.</p>')}
+  ${row('Countdown to nothing', '<p>Cada institución tiene un plazo propio, de 45 segundos a 5 minutos, que corre en su dossier. Al llegar a cero muestra <b>NOTHING HAPPENED</b> y vuelve a empezar.</p>')}
+  ${row('Lenguaje institucional', '<p>El texto descriptivo de la institución se degrada en su dossier a medida que acumula brechas: hasta un 55 % de los caracteres se reemplaza por █ ▓ ▒ ░ # % & @.</p>')}
   ${row('Activos simbólicos', `<table class="idx sm"><tbody>${ASSETS.map((a) => `<tr><td><b>${a.asset}</b></td><td>${vg[a.vector].glyph} ${vg[a.vector].label}</td><td>INTACT → PROBED → ${a.hit}</td></tr>`).join('')}</tbody></table>`)}
 `);
 
 // ── VIII · threat telemetry ─────────────────────────────────────────────────
-section(8, 'Threat Telemetry', 'La columna derecha: el estado de la corrida en números, la mezcla de vectores y la interceptación en vivo.', `
+section(9, 'Threat Telemetry', 'La columna derecha: el estado de la corrida en números, la mezcla de vectores y la interceptación en vivo.', `
   <div class="split"><figure class="tall"><img src="${img('col-r')}"/></figure><div>
     ${row('Spec block', `<table class="idx sm"><tbody>
       <tr><td><b>Institutions</b></td><td>Tamaño del índice (2.718).</td></tr>
@@ -173,7 +235,7 @@ section(8, 'Threat Telemetry', 'La columna derecha: el estado de la corrida en n
 `);
 
 // ── IX · map ────────────────────────────────────────────────────────────────
-section(9, 'Mapa', 'La vista principal. Un mundo de líneas finas que se convierte en ciudad al acercarse.', `
+section(10, 'Mapa', 'La vista principal. Un mundo de líneas finas que se convierte en ciudad al acercarse.', `
   ${fig('city', 'Buenos Aires a nivel ciudad: calles, barrios y las instituciones con nombre')}
   <div class="cols2">
     ${row('Capas', '<p>Costas, fronteras y graticula a escala mundial; al acercarse, la ciudad (OpenFreeMap): calles por jerarquía, agua, parques, edificios y nombres. Los puntos blancos son las 2.718 instituciones; a partir de cierto zoom todas llevan nombre.</p>')}
@@ -183,17 +245,17 @@ section(9, 'Mapa', 'La vista principal. Un mundo de líneas finas que se convier
   </div>
 `);
 page('Satélite + Tilt', `
-  ${opener(10, 'Satélite y Tilt', 'Los dos controles de cámara del menú de íconos.')}
+  ${opener(11, 'Satélite y Tilt', 'Los dos controles de cámara del menú de íconos.')}
   ${fig('sat-tilt', 'Palermo, Buenos Aires: imagen satelital real con la cámara inclinada')}
   <div class="cols2">
     ${row(`<span class="ic">${ICON.sat}</span> Satélite`, '<p>Reemplaza el fondo por imagen satelital real (Esri World Imagery), desaturada para que las líneas del monitor sigan mandando. Tecla <b>S</b>.</p>')}
     ${row(`<span class="ic">${ICON.tilt}</span> Tilt`, '<p>Inclina la cámara 50°: la vista oblicua de dios sobre la ciudad. Tecla <b>T</b>.</p>')}
   </div>
 `);
-toc.push([10, 'Satélite y Tilt', folio]);
+toc.push([11, 'Satélite y Tilt', folio]);
 
 // ── XI · globe & network ────────────────────────────────────────────────────
-section(11, 'Globo y Red', 'Dos maneras más de mirar lo mismo.', `
+section(12, 'Globo y Red', 'Dos maneras más de mirar lo mismo.', `
   <div class="pair ctr">${fig('globe-c', 'Globo')}${fig('network-c', 'Red')}</div>
   <div class="cols2">
     ${row(`<span class="ic">${ICON.globe}</span> Globo`, '<p>Planeta rojo: océano oscuro, tierra carmesí, costas brillantes y atmósfera. Gira despacio sobre el Atlántico. Nombres de países y de las ciudades donde se concentran instituciones, con su cantidad. Los arcos se levantan sobre la superficie; lo que pasa por detrás no se ve.</p>')}
@@ -202,14 +264,14 @@ section(11, 'Globo y Red', 'Dos maneras más de mirar lo mismo.', `
 `);
 
 // ── XII–XIII · target profile ───────────────────────────────────────────────
-section(12, 'Target Profile', 'El dossier de una institución. Se abre con un click en el mapa, en Most-Targeted, en el Event Stream o en el Master Index. Arriba lo real; abajo la operación.', `
+section(13, 'Target Profile', 'El dossier de una institución. Se abre con un click en el mapa, en Most-Targeted, en el Event Stream o en el Master Index. Arriba lo real; abajo la operación.', `
   <div class="pair">${fig('profile-top', 'Encabezado + inteligencia de fuentes abiertas')}${fig('profile-real2', 'Registro institucional + reconocimiento')}</div>
   ${row('Encabezado', '<p>Número en el índice (0042 of 2,718), tipo y ciudad, nombre. Ficha: LAT · LON · PRM (prominencia ◆◆◆◆◇) · HIT (golpes) · SCN (escena). ◂ ▸ recorre el Most-Targeted; ✕ cierra.</p>')}
   ${row('Open source intelligence', '<p>De OpenStreetMap, en vivo: si está abierta ahora, horario, dirección, operador, año de fundación, accesibilidad, entrada libre o paga, teléfono, si es patrimonio protegido, descripción y enlaces.</p>')}
   ${row('Institutional record', '<p>De Wikidata: tipo, fundación, visitantes por año, tamaño de la colección, arquitecto, dirección, propietario, estilo, Instagram y X.</p>')}
   ${row('Reconnaissance', '<p>Imagen satelital de la manzana con retícula, y hasta cuatro cámaras públicas de tránsito en 2 km, con su imagen en vivo.</p>')}
 `);
-section(13, 'Target Profile · operación', 'La mitad inferior del dossier registra lo que las armas le hicieron a la institución.', `
+section(14, 'Target Profile · operación', 'La mitad inferior del dossier registra lo que las armas le hicieron a la institución.', `
   <div class="pair">${fig('profile-street', 'Calle: fotografías geolocalizadas de Wikimedia Commons')}${fig('profile-op', 'Operación, lenguaje institucional, activos, agresores')}</div>
   <div class="cols2">
     ${row('Street level', '<p>Seis fotografías públicas tomadas a menos de 600 m, con distancia y año. Funciona también donde no hay cámaras, como Buenos Aires.</p>')}
@@ -220,7 +282,7 @@ section(13, 'Target Profile · operación', 'La mitad inferior del dossier regis
 `);
 
 // ── XIV · master index ──────────────────────────────────────────────────────
-section(14, 'Master Index', 'Las 2.718 instituciones como un catálogo impreso.', `
+section(15, 'Master Index', 'Las 2.718 instituciones como un catálogo impreso.', `
   ${fig('index', 'Master Index · pliego 01 de 16')}
   <div class="cols2">
     ${row(`<span class="ic">${ICON.index}</span> Lectura`, '<p>Número · romano · NOMBRE · ciudad · categoría. Si la institución fue golpeada, la categoría se reemplaza por sus golpes en rojo (2✕). Ordenadas por prominencia y nombre.</p>')}
@@ -235,12 +297,12 @@ const SYM = [
   ['Mapa', [['○', 'Anillo rojo', 'Institución golpeada; el radio crece con los golpes'], ['·', 'Punto blanco', 'Institución'], ['■ ◇', 'Píxel + glifo', 'Operación en vuelo y su vector'], ['⌒', 'Arco', 'Trayecto origen → objetivo'], ['▣', 'Cámara', 'Cámara pública de tránsito'], ['N', 'Nombre rojo', 'Nodo de origen de un arma']]],
   ['Menú', [[ICON.map, 'Map', 'Vista de mapa'], [ICON.globe, 'Globe', 'Planeta rojo'], [ICON.network, 'Network', 'Grafo'], [ICON.sat, 'Satellite', 'Imagen satelital · S'], [ICON.tilt, 'Tilt', 'Cámara oblicua · T'], [ICON.index, 'Master index', 'Catálogo completo']]],
 ];
-section(15, 'Símbolos', 'Todo lo que aparece en pantalla sin palabras.', `
+section(16, 'Símbolos', 'Todo lo que aparece en pantalla sin palabras.', `
   <div class="sym">${SYM.map(([g, items]) => `<div class="symg"><h3>${g}</h3>${items.map(([s, n, d]) => `<div class="sy"><span class="s">${s}</span><b>${n}</b><span>${d}</span></div>`).join('')}</div>`).join('')}</div>
 `);
 
 // ── XVI · sources + editions ────────────────────────────────────────────────
-section(16, 'Fuentes y ediciones', 'Lo real de la plataforma es abierto, de solo lectura y sin claves.', `
+section(17, 'Fuentes y ediciones', 'Los datos reales de la plataforma vienen de fuentes abiertas, de solo lectura y sin claves.', `
   <table class="idx sm"><tbody>
     <tr><td><b>OpenStreetMap · Nominatim</b></td><td>Dirección, horarios, operador, accesibilidad, patrimonio</td></tr>
     <tr><td><b>Wikidata</b></td><td>Fundación, visitantes, colección, arquitecto, dirección, redes</td></tr>
@@ -251,8 +313,8 @@ section(16, 'Fuentes y ediciones', 'Lo real de la plataforma es abierto, de solo
     <tr><td><b>TfL · Caltrans · City of Austin · LTA</b></td><td>Cámaras de tránsito públicas (Londres, LA, SF, San Diego, Austin, Singapur)</td></tr>
     <tr><td><b>MGRS</b></td><td>Coordenadas militares reales del centro de la vista</td></tr>
   </tbody></table>
-  ${row('Ediciones', '<p><b>Edición I</b> — terminal monoespaciada JetBrains Mono, color por vector, rayas glitch y scanlines. <b>Edición II</b> — índice editorial: Helvetica, off-black / off-white, una sola tinta de alerta.</p>')}
-  ${fig('v1-home', 'Edición I · n333k0.github.io/cicfa-monitor', 'margin-left:40mm')}
+  ${row('Ediciones', '<p><b>Edición I</b> — terminal monoespaciada, un color por vector, efectos glitch, controles de pausa y velocidad. <b>Edición II</b> — Helvetica, off-black / off-white, rojo solo para brechas.</p>')}
+  ${fig('v1-home', 'Edición I · n333k0.github.io/cicfa-monitor')}
 `);
 
 // ── cover + contents (built last so the TOC has folios) ─────────────────────
@@ -296,13 +358,15 @@ figure img { width: 100%; display: block; }
 figcaption { font-size: 6.5pt; color: #8f8c85; margin-top: 1.6mm; }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-bottom: 2mm; }
 .pair figure { margin: 0 0 4mm; }
-.pair figure img { height: 92mm; object-fit: cover; object-position: top left; }
-.pair.ctr figure img { height: 92mm; object-position: center; }
-.cols2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
-.cols2 .row { grid-template-columns: 24mm 1fr; }
-.split { display: grid; grid-template-columns: 52mm 1fr; gap: 8mm; }
-.split .row { grid-template-columns: 24mm 1fr; }
-figure.tall img { width: 52mm; }
+.pair figure img { height: 100mm; object-fit: cover; object-position: top left; }
+.pair.ctr figure img { height: 66mm; object-position: center; }
+/* everything that isn't a label/text row starts at the text column (40mm), so images and tables align with the copy */
+.page > figure, .page > .pair, .page > .legend, .page > table.idx, .page > .arch, .page > .sym, .page > .split, .page > .block { margin-left: 40mm; }
+.cols2 { display: block; }
+.cols2 .row { grid-template-columns: 40mm 1fr; }
+.split { display: grid; grid-template-columns: 46mm 1fr; gap: 6mm; }
+.split .row { display: block; } .split .row .lab { margin-bottom: 1.5mm; } .split table.idx.sm td:first-child { width: 30mm; }
+figure.tall img { width: 46mm; }
 /* tables in the index style */
 table.idx { width: 100%; border-collapse: collapse; font-size: 6.8pt; line-height: 1.35; margin-bottom: 6mm; }
 table.idx th { text-align: left; font-weight: 700; font-size: 6.2pt; padding: 0 2.5mm 2mm 0; }
@@ -321,28 +385,32 @@ table.toc td.r { width: 12mm; font-size: 6.5pt; }
 table.toc td.f { text-align: right; width: 10mm; }
 pre.code { font-family: "JetBrains Mono", Menlo, monospace; font-size: 7.4pt; line-height: 1.6; margin: 0 0 7mm 40mm; padding: 5mm 6mm; background: #151515; white-space: pre; }
 pre.code span { color: #8f8c85; }
+table.idx.weap { font-size: 6.1pt; } table.idx.weap td { padding-right: 1.8mm; }
+h3.ct { font-size: 7pt; font-weight: 700; text-transform: uppercase; margin: 0 0 2mm; }
+table.click { margin-bottom: 6mm; } table.click td:nth-child(1) { width: 44mm; white-space: normal !important; } table.click td:nth-child(2) { width: 34mm; color: #b9b6ae; }
+table.click .ic { vertical-align: -3pt; margin: 0 1mm 0 0; }
 /* anatomy */
 .anat { position: relative; }
 .mk { position: absolute; transform: translate(-30%, -30%); width: 4.2mm; height: 4.2mm; background: #ece9e2; color: #0d0d0d; font-size: 6.2pt; font-weight: 700; display: grid; place-items: center; }
 .mk.s { position: static; transform: none; flex: 0 0 auto; }
-.legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm 6mm; margin-top: 3mm; }
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5mm 6mm; margin-top: 3mm; }
 .lg { display: flex; gap: 2.5mm; } .lg b { font-size: 7.4pt; } .lg p { font-size: 7pt; line-height: 1.4; }
 /* architecture */
-.arch { display: flex; align-items: stretch; gap: 2mm; margin: 0 0 9mm 0; }
-.arch .box { flex: 1; border: 0.4pt solid #ece9e2; padding: 3mm; display: flex; flex-direction: column; gap: 1.5mm; }
-.arch .box b { font-size: 7.4pt; } .arch .box span { font-size: 6.6pt; line-height: 1.4; color: #b9b6ae; }
+.arch { display: flex; align-items: stretch; gap: 1.5mm; margin-bottom: 9mm; }
+.arch .box { flex: 1; border: 0.4pt solid #ece9e2; padding: 2.4mm; display: flex; flex-direction: column; gap: 1.5mm; }
+.arch .box b { font-size: 7pt; } .arch .box span { font-size: 6.2pt; line-height: 1.4; color: #b9b6ae; }
 .arch i { font-style: normal; align-self: center; font-size: 10pt; }
 .ic { display: inline-flex; vertical-align: -3pt; margin-right: 1.5mm; }
 /* symbols */
 .sym { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 10mm; }
 .symg h3 { font-size: 7pt; font-weight: 700; text-transform: uppercase; margin-bottom: 2.5mm; }
-.sy { display: grid; grid-template-columns: 11mm 26mm 1fr; align-items: center; border-top: 0.25pt solid #262626; padding: 1.3mm 0; font-size: 7pt; }
+.sy { display: grid; grid-template-columns: 9mm 22mm 1fr; align-items: center; border-top: 0.25pt solid #262626; padding: 1.3mm 0; font-size: 7pt; }
 .sy .s { font-size: 11pt; line-height: 1; } .sy b { font-weight: 700; }
 /* cover */
 .cover { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.cover .logo { width: 46mm; } .cover .logo svg { width: 100%; height: auto; display: block; }
+.cover .logo { width: 62mm; } .cover .logo svg { width: 100%; height: auto; display: block; }
 .cover .logo svg g { fill: #ece9e2; }
-.cover .title { margin-top: 12mm; text-align: center; display: flex; flex-direction: column; gap: 1.2mm; }
+.cover .title { position: absolute; left: 0; right: 0; top: 226mm; text-align: center; display: flex; flex-direction: column; gap: 1.2mm; }
 .cover .title b { font-size: 11pt; font-weight: 700; } .cover .title span { font-size: 11pt; }
 .cover .foot { position: absolute; left: 16mm; right: 16mm; bottom: 14mm; display: flex; justify-content: space-between; font-size: 6.5pt; }
 `;
