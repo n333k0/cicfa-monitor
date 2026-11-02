@@ -33,7 +33,7 @@ html.v2 .viewsel, html.v2 .ghud-controls, html.v2 .legend { display: none !impor
 
 /* ── brand: ASCII mark + text nav (top-left) ─────────────────────────────── */
 .v2-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; flex: 0 0 auto; pointer-events: auto; }
-.ascii-logo { margin: 0; font: 700 5.6px/5.7px "JetBrains Mono", Menlo, monospace; letter-spacing: 0;
+.ascii-logo { margin: 0; font: 700 6.4px/6.5px "JetBrains Mono", Menlo, monospace; letter-spacing: 0;
   color: var(--ink); white-space: pre; text-transform: none; user-select: none; }
 .v2-nav { display: flex; gap: 16px; }
 .v2-nav button { font: 400 10px var(--sans); color: var(--grey); cursor: pointer; background: none; border: 0; padding: 0; }
@@ -55,9 +55,9 @@ html.v2 .col-r .vrow + .vrow, html.v2 .col-r .mini { margin-top: 0; }
 html.v2 .crit { color: var(--crimson); }
 
 /* ── columns: flat panels, Tomb margins ─────────────────────────────────── */
-html.v2 .col-l { top: 40px; left: var(--m); width: 270px; bottom: 96px; gap: 22px;
+html.v2 .col-l { top: 40px; left: var(--m); width: 296px; bottom: 96px; gap: 22px;
   background: var(--panel); padding: 14px 16px; pointer-events: auto; }
-html.v2 .col-r { top: 40px; right: 120px; width: 280px; bottom: 96px; gap: 22px;
+html.v2 .col-r { top: 40px; right: var(--m); width: 296px; bottom: 96px; gap: 22px;
   background: var(--panel); padding: 14px 16px; pointer-events: auto; }
 html.v2 .panel-h { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0;
   display: flex; justify-content: space-between; align-items: baseline; }
@@ -104,40 +104,41 @@ html.v2 .clk::before { color: var(--ink); }
 html.v2 .chip:hover::before, html.v2 .vbtn:hover::before { color: var(--ink); }
 
 /* raw signal buffer: plain off-white, quieter */
-html.v2 .rawstream { top: 203px; bottom: 96px; left: 380px; width: 230px; opacity: 0.55; }
+html.v2 .rawstream { top: 217px; bottom: 96px; left: 406px; width: 230px; opacity: 0.55; }
 html.v2 .rs-head { color: var(--ink); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0; margin-bottom: 8px; }
 html.v2 .rs-body { -webkit-mask-image: linear-gradient(to bottom, transparent, #000 5%); mask-image: linear-gradient(to bottom, transparent, #000 5%); }
 html.v2 .rs-line, html.v2 .rs-line .op, html.v2 .rs-line .tg { color: var(--ink); font-size: 9px; }
 
 /* dock */
-html.v2 .dock { left: var(--m); right: 120px; bottom: 28px; }
+html.v2 .dock { left: var(--m); right: var(--m); bottom: 28px; }
 html.v2 .ticker .rail span { color: var(--ink-faint); } html.v2 .ticker .rail b { color: var(--ink); }
 html.v2 .bytes { color: var(--ink); } html.v2 .bytes b { color: var(--ink); font-weight: 700; }
 
 /* map HUD */
-html.v2 .ghud { left: 380px; right: 430px; }
-html.v2 .shell:has(.profile) .ghud { left: 830px; }
-html.v2 .ghud-class { top: 136px; }
-html.v2 .ghud-coord { top: 154px; }
+html.v2 .ghud { left: 406px; right: 406px; }
+html.v2 .shell:has(.profile) .ghud { left: 866px; }
+html.v2 .ghud-class { top: 55px; }   /* level with CICFA / DWG-01 */
+html.v2 .ghud-coord { top: 74px; }
 html.v2 .ghud-cls, html.v2 .ghud-coord, html.v2 .ghud-coord .ghud-dim { color: var(--ink); }
 html.v2 .ghud-tick { color: var(--ink-faint); }
 html.v2 .ghud, html.v2 .ghud-class, html.v2 .ghud-coord { text-transform: none; letter-spacing: 0; font-size: 9px; }
 html.v2 .map-tooltip { color: var(--ink); font-size: 10px; }
 
-/* ── icon rail (right edge) ─────────────────────────────────────────────── */
-.irail { position: absolute; top: 74px; right: 40px; z-index: 46; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+/* ── icon rail: horizontal, centred at the bottom ───────────────────────── */
+.irail { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 46;
+  display: flex; flex-direction: row; align-items: center; gap: 22px; }
 .rail-btn { position: relative; width: 24px; height: 24px; display: grid; place-items: center; background: none; border: 0;
   color: var(--ink); opacity: 0.5; cursor: pointer; padding: 0; transition: opacity 0.12s ease; }
 .rail-btn:hover, .rail-btn.on { opacity: 1; }
-.rail-tip { position: absolute; right: 34px; top: 50%; transform: translate(4px, -50%); white-space: nowrap;
+.rail-tip { position: absolute; left: 50%; bottom: 32px; transform: translate(-50%, 4px); white-space: nowrap;
   font: 400 10px var(--sans); color: var(--ink); background: var(--bg); padding: 3px 7px; opacity: 0; pointer-events: none;
   transition: opacity 0.12s ease, transform 0.12s ease; }
 .rail-tip::before { content: '▸ '; }
-.rail-btn:hover .rail-tip { opacity: 1; transform: translate(0, -50%); }
-.rail-sep { width: 12px; height: 1px; background: var(--grey); }
+.rail-btn:hover .rail-tip { opacity: 1; transform: translate(-50%, 0); }
+.rail-sep { width: 1px; height: 12px; background: var(--grey); }
 
 /* ── target profile ─────────────────────────────────────────────────────── */
-html.v2 .profile { top: 168px; left: 380px; width: 430px; bottom: 96px;
+html.v2 .profile { top: 168px; left: 406px; width: 430px; bottom: 96px;
   background: var(--panel) !important; padding: 18px 22px 18px 34px; }
 .pf2-head { position: relative; margin-bottom: 6px; }
 .pf2-arrow { position: absolute; top: 1px; background: none; border: 0; color: var(--ink); cursor: pointer; font-size: 10px; padding: 0; }
