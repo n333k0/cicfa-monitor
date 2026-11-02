@@ -179,7 +179,9 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
 /* spread pager: centred across the two pages, on the header line */
 .mi-pager { position: absolute; top: 36px; left: 50%; transform: translateX(-50%); z-index: 2; display: flex; gap: 10px;
   align-items: baseline; font-size: 10px; line-height: 1; background: var(--bg); padding: 0 12px; }
-.mi-pager i { font-style: normal; color: var(--grey); } .mi-pager b { font-weight: 400; }
+.mi-pctl { display: flex; gap: 10px; align-items: baseline; }
+.mi-pager i { font-style: normal; color: var(--grey); } .mi-pctl b { font-weight: 400; }
+.mi-mtitle, .mi-mclose { display: none; }
 .mi-arrow, .mi-close { background: none; border: 0; color: var(--ink); cursor: pointer; font-size: 10px; line-height: 1; padding: 0; }
 .mi-arrow:disabled { color: var(--grey); cursor: default; }
 .mi-folio { font-size: 9px; }
@@ -204,32 +206,36 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
 @media (max-width: 900px) {
   /* logo spans the full width inside a 16px margin: 68 columns × 0.6em advance */
   html.v2 { --lf: calc((100vw - 32px) / 40.8); --lh: calc(var(--lf) * 1.02);
-    --mh: calc(18px + var(--lh) * 18); --tt: 34px; --top: calc(var(--mh) + var(--tt));
-    --mt: calc(56px + env(safe-area-inset-bottom)); }
-  /* full-width ASCII logo, no bar, floating over everything (doesn't block the map) */
+    --mh: calc(18px + var(--lh) * 18);                          /* logo block */
+    --ic: 48px;                                                  /* icon row */
+    --tb: calc(46px + env(safe-area-inset-bottom));              /* tab bar */
+    --top: calc(var(--mh) + var(--ic));                          /* sheets start under logo + icons */
+    --mt: calc(var(--tb) + var(--ic)); }
+  /* full-width ASCII logo, no bar, no shadow, floating over everything (doesn't block the map) */
   html.v2 .mhead { display: block; position: fixed; top: 0; left: 0; right: 0; padding: 14px 16px 0; z-index: 72;
     background: none; pointer-events: none; }
-  html.v2 .mhead .ascii-logo { font-size: var(--lf); line-height: var(--lh); text-shadow: 0 0 6px var(--bg); }
-  /* panel tabs right under the logo — transparent */
-  html.v2 .mtabs { display: flex; justify-content: space-between; position: fixed; top: var(--mh); left: 0; right: 0;
-    height: var(--tt); padding: 0 16px; z-index: 71; background: none; }
+  html.v2 .mhead .ascii-logo { font-size: var(--lf); line-height: var(--lh); text-shadow: none; }
+  /* LAB · TARGETS · TELEMETRY · STREAM: dark bar along the very bottom */
+  html.v2 .mtabs { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; top: auto;
+    height: var(--tb); padding: 0 6px env(safe-area-inset-bottom); z-index: 71; background: var(--bg); }
   html.v2 .mtabs button { background: none; border: 0; padding: 0; color: var(--ink); opacity: 0.55; font: 700 10.5px var(--sans);
-    text-transform: uppercase; display: flex; align-items: center; gap: 5px; cursor: pointer; text-shadow: 0 0 6px var(--bg);
-    -webkit-tap-highlight-color: transparent; }
+    text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer;
+    text-shadow: none; -webkit-tap-highlight-color: transparent; }
   html.v2 .mtabs button i { font-style: normal; font-size: 8px; }
   html.v2 .mtabs button.on { opacity: 1; }
-  /* icon menu → evenly spaced along the very bottom, no bar */
-  html.v2 .irail { top: auto; bottom: 0; left: 0; right: 0; height: var(--mt); padding: 0 16px env(safe-area-inset-bottom);
-    transform: none; justify-content: space-between; gap: 0; z-index: 71; background: none; }
-  html.v2 .rail-btn { width: 32px; height: 32px; opacity: 0.6; filter: drop-shadow(0 0 4px var(--bg)); }
+  /* icon row sits right above the tab bar; when a tab opens it rises with the sheet to just under the logo */
+  html.v2 .irail { top: auto; bottom: var(--tb); left: 0; right: 0; height: var(--ic); padding: 0 16px;
+    transform: none; justify-content: space-between; gap: 0; z-index: 71; background: none; transition: bottom 0.22s ease; }
+  html.v2 .shell:not(.mt-none) .irail { bottom: calc(100dvh - var(--top)); }
+  html.v2 .rail-btn { width: 32px; height: 32px; opacity: 0.6; filter: none; }
   html.v2 .rail-sep, html.v2 .rail-tip { display: none; }
   /* things that don't fit a phone */
   html.v2 .rawstream, html.v2 .ghud, html.v2 .dock, html.v2 .col-l .v2-brand, html.v2 .map-tooltip, html.v2 .cam-card { display: none !important; }
   /* columns collapse; the open tab slides its panels up as a sheet above the tab bar */
-  html.v2 .col-l, html.v2 .col-r { display: none; position: fixed; top: var(--top); left: 0; right: 0; bottom: auto; width: auto;
-    max-height: calc(100vh - var(--top) - var(--mt) - 8px); overflow-y: auto; padding: 14px 16px 20px; gap: 20px; z-index: 65;
-    -webkit-overflow-scrolling: touch; animation: msheet 0.18s ease-out; }
-  @keyframes msheet { from { transform: translateY(-16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  html.v2 .col-l, html.v2 .col-r { display: none; position: fixed; top: var(--top); left: 0; right: 0; bottom: var(--tb); width: auto;
+    max-height: none; overflow-y: auto; padding: 8px 16px 20px; gap: 20px; z-index: 65; background: var(--bg);
+    -webkit-overflow-scrolling: touch; animation: msheet 0.22s ease-out; }
+  @keyframes msheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
   html.v2 .shell.mt-lab .col-l, html.v2 .shell.mt-targets .col-l,
   html.v2 .shell.mt-telemetry .col-r, html.v2 .shell.mt-stream .col-r { display: flex; }
   html.v2 .col-l .grow, html.v2 .col-r .grow { flex: none; }
@@ -240,7 +246,7 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   /* TELEMETRY = spec + vectors · STREAM = event stream */
   html.v2 .shell.mt-telemetry .col-r > .panel.grow { display: none; }
   html.v2 .shell.mt-stream .col-r > .v2-spec, html.v2 .shell.mt-stream .col-r > .panel:not(.grow) { display: none; }
-  html.v2 .shell.mt-stream .feed { height: 44vh; }
+  html.v2 .shell.mt-stream .feed { height: auto; }
   /* bigger touch rows */
   html.v2 .agent { padding: 5px 0; } html.v2 .detail .row { padding: 6px 0 !important; }
   html.v2 .vrow { padding: 4px 0; } html.v2 .ev { padding: 3px 0; }
@@ -248,7 +254,7 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   /* target profile = bottom sheet: the map above stays visible + tappable; grip expands it to full height */
   html.v2 .profile { position: fixed; top: auto; height: 46vh; bottom: var(--mt); left: 0; right: 0; width: auto; z-index: 66;
     padding: 0 16px 24px 30px; border-top: 1px solid #2a2a2a; transition: height 0.2s ease; }
-  html.v2 .profile.full { height: calc(100vh - var(--top) - var(--mt)); }
+  html.v2 .profile.full { height: calc(100dvh - var(--top) - var(--mt)); }
   html.v2 .pf-grip { display: flex; position: sticky; top: 0; z-index: 2; width: calc(100% + 46px); margin: 0 -16px 10px -30px;
     height: 34px; align-items: center; justify-content: center; gap: 8px; background: var(--panel); border: 0;
     color: var(--ink); opacity: 0.8; font: 700 9.5px var(--sans); text-transform: uppercase; cursor: pointer; }
@@ -263,10 +269,13 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   html.v2 .mi-row { grid-template-columns: 26px 46px minmax(0, 1fr) 64px; font-size: 9.5px; line-height: 16px; }
   html.v2 .mi-n, html.v2 .mi-r, html.v2 .mi-h { font-size: 8px; }
   html.v2 .mi-cat { display: none; }
-  html.v2 .mi-pager { position: sticky; top: 0; left: auto; transform: none; justify-content: center; padding: 14px 0 10px; font-size: 11px; gap: 14px; }
-  html.v2 .mi-head { grid-template-columns: 1fr; }
+  html.v2 .mi-pager { position: sticky; top: 0; left: auto; transform: none; display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; height: 48px; padding: 0 16px; font-size: 11px; }
+  html.v2 .mi-mtitle { display: block; font-size: 11px; font-weight: 700; }
+  html.v2 .mi-pctl { gap: 14px; align-items: center; }
+  html.v2 .mi-head { display: none; }
   html.v2 .mi-arrow { font-size: 13px; padding: 4px; }
-  html.v2 .mi-close { position: fixed; top: 12px; right: 16px; font-size: 14px; padding: 4px; z-index: 96; }
+  html.v2 .mi-mclose { display: block; justify-self: end; background: none; border: 0; color: var(--ink); font-size: 14px; line-height: 1; padding: 4px 0 4px 8px; cursor: pointer; }
   html.v2 .mindex { display: block; }
   html.v2 .mi-folio.bottom { display: none; }
 }

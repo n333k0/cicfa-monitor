@@ -35,9 +35,13 @@ export default function MasterIndex({ open, onClose }: { open: boolean; onClose:
   return (
     <div className="mindex" onClick={onClose}>
       <div className="mi-pager" onClick={(e) => e.stopPropagation()}>
-        <button className="mi-arrow" disabled={spread === 0} onClick={() => setSpread((s) => s - 1)} aria-label="Previous spread">◂</button>
-        <span><b>{String(spread + 1).padStart(2, '0')}</b> <i>of {String(spreads).padStart(2, '0')}</i></span>
-        <button className="mi-arrow" disabled={spread >= spreads - 1} onClick={() => setSpread((s) => s + 1)} aria-label="Next spread">▸</button>
+        <b className="mi-mtitle">CICFA Index</b>
+        <span className="mi-pctl">
+          <button className="mi-arrow" disabled={spread === 0} onClick={() => setSpread((s) => s - 1)} aria-label="Previous spread">◂</button>
+          <span><b>{String(spread + 1).padStart(2, '0')}</b> <i>of {String(spreads).padStart(2, '0')}</i></span>
+          <button className="mi-arrow" disabled={spread >= spreads - 1} onClick={() => setSpread((s) => s + 1)} aria-label="Next spread">▸</button>
+        </span>
+        <button className="mi-mclose" onClick={onClose} aria-label="Close index">✕</button>
       </div>
       {pages.map((rows, p) => (
         <div key={p} className="mi-page" onClick={(e) => e.stopPropagation()}>
