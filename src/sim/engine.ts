@@ -15,6 +15,9 @@ function weightedVector(vectors: VectorId[]): VectorId {
   for (let k = 0; k < vectors.length; k++) { r -= weights[k]; if (r <= 0) return vectors[k]; }
   return vectors[vectors.length - 1];
 }
+/** fields an external agent may set when it fires an operation */
+export interface SpawnOverrides { vector?: VectorId; targetId?: string; severity?: number; line?: string }
+
 function targetFor(): Institution {
   // ~35% of strikes are biased toward the Argentine focus scene; prominence-weighted.
   const pool = (FOCUS_INSTITUTIONS.length && Math.random() < 0.35) ? FOCUS_INSTITUTIONS : INSTITUTIONS;
@@ -163,17 +166,18 @@ class Engine {
 
   // ── event creation ──────────────────────────────────────────────
   /** Spawn an event. Public so external connectors (webhook/mcp/manual) can inject. */
-  spawn(agentId?: string, seedHistory = false): AttackEvent | null {
+  spawn(agentId?: string, seedHistory = false, over: SpawnOverrides = {}): AttackEvent | null {
     const liveAgents = this.agents.filter((a) => a.status === 'live' || a.status === 'degraded');
     const agent = agentId ? AGENT_INDEX[agentId] && this.agents.find((a) => a.id === agentId)
       : pick(liveAgents.length ? liveAgents : this.agents);
     if (!agent) return null;
-    const vector = weightedVector(agent.vectors);
-    const target = targetFor();
+    // an external agent may choose its own vector / target / severity / line; the engine fills the rest
+    const vector = over.vector && VECTORS[over.vector] ? over.vector : weightedVector(agent.vectors);
+    const target = (over.targetId && INSTITUTION_INDEX[over.targetId]) || targetFor();
     const vdef = VECTORS[vector];
     const distKm = haversineKm(agent.originLon, agent.originLat, target.lon, target.lat);
-    const severity = Math.min(5, Math.max(1,
-      Math.round((vdef.weight > 6 ? 2 : 3) + Math.random() * 2 + (vector === 'ransomware' ? 2 : 0))));
+    const severity = Math.min(5, Math.max(1, over.severity != null ? Math.round(over.severity)
+      : Math.round((vdef.weight > 6 ? 2 : 3) + Math.random() * 2 + (vector === 'ransomware' ? 2 : 0))));
     const durationMs = 2200 + distKm * 0.9 + Math.random() * 1500;
     const startedAt = seedHistory ? this.clock - Math.random() * 40_000 : this.clock;
     const payloadBytes = vector === 'exfiltration'
@@ -188,7 +192,7 @@ class Engine {
       targetId: target.id, targetLon: target.lon, targetLat: target.lat,
       severity, startedAt, durationMs,
       phase: 'inflight', outcome: null,
-      line: `${pick(vdef.verbs)} ${target.name} · ${target.city}`,
+      line: over.line?.trim() ? over.line.trim().slice(0, 160) : `${pick(vdef.verbs)} ${target.name} · ${target.city}`,
       payloadBytes,
     };
 
@@ -312,7 +316,7 @@ class Engine {
   agentHitCount(id: string) { return this.agentHits[id] ?? 0; }
 
   /** manual trigger — "fire" an agent once (used by HUD button + external connectors) */
-  fire(agentId: string) { const e = this.spawn(agentId); if (e) this.notifyChange(); return e; }
+  fire(agentId: string, over: SpawnOverrides = {}) { const e = this.spawn(agentId, false, over); if (e) this.notifyChange(); return e; }
 
   passesFilter(e: AttackEvent): boolean {
     if (!this.filters.vectors.has(e.vector)) return false;

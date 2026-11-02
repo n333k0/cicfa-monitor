@@ -30,9 +30,9 @@ export function injectEvent(p: InjectPayload) {
     console.warn('[cicfa] inject rejected — unknown agent/target', p);
     return null;
   }
-  // Route through the engine's own spawn so visuals stay identical.
-  const e = engine.fire(p.agentId);
-  return e;
+  // Route through the engine's own spawn so visuals stay identical — honouring the agent's
+  // chosen vector / target / severity / line (the engine fills anything left out).
+  return engine.fire(p.agentId, { vector: p.vector, targetId: p.targetId, severity: p.severity, line: p.line });
 }
 
 export function attachWebSocketFeed(url: string) {

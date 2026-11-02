@@ -1,0 +1,296 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>CICFA Monitor — Manual de operaciones</title><style>
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #0d0d0d; }
+body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; color: #ece9e2; font-size: 8.2pt; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+.page { width: 210mm; height: 297mm; padding: 14mm 16mm 14mm; position: relative; overflow: hidden; page-break-after: always; background: #0d0d0d; }
+.rh { display: grid; grid-template-columns: 40mm 1fr auto; font-size: 6.5pt; margin-bottom: 14mm; }
+.rh b { font-weight: 700; } .rh i { font-style: normal; }
+.opener, .row { display: grid; grid-template-columns: 40mm 1fr; column-gap: 0; }
+.opener { margin-bottom: 9mm; }
+.opener .lab b { font-size: 7pt; font-weight: 700; }
+h1 { font-size: 22pt; line-height: 1.04; font-weight: 700; text-transform: uppercase; letter-spacing: -0.2pt; }
+.lede { font-size: 10pt; line-height: 1.42; margin-top: 4mm; max-width: 118mm; }
+.row { margin-bottom: 4.2mm; }
+.row .lab { font-size: 7pt; font-weight: 700; padding-right: 4mm; }
+.row .main p + p { margin-top: 2mm; }
+.row p { max-width: 128mm; }
+em { font-style: normal; text-decoration: underline; text-underline-offset: 1.5pt; }
+.mono { font-family: "JetBrains Mono", Menlo, monospace; font-size: 7pt; }
+.crit { color: #e60026 !important; }
+figure { margin: 2mm 0 6mm; }
+figure img { width: 100%; display: block; }
+figcaption { font-size: 6.5pt; color: #8f8c85; margin-top: 1.6mm; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; margin-bottom: 2mm; }
+.pair figure { margin: 0 0 4mm; }
+.pair figure img { height: 92mm; object-fit: cover; object-position: top left; }
+.pair.ctr figure img { height: 92mm; object-position: center; }
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; }
+.cols2 .row { grid-template-columns: 24mm 1fr; }
+.split { display: grid; grid-template-columns: 52mm 1fr; gap: 8mm; }
+.split .row { grid-template-columns: 24mm 1fr; }
+figure.tall img { width: 52mm; }
+/* tables in the index style */
+table.idx { width: 100%; border-collapse: collapse; font-size: 6.8pt; line-height: 1.35; margin-bottom: 6mm; }
+table.idx th { text-align: left; font-weight: 700; font-size: 6.2pt; padding: 0 2.5mm 2mm 0; }
+table.idx td { padding: 1.2mm 2.5mm 1.2mm 0; vertical-align: top; text-transform: uppercase; }
+table.idx tbody tr { border-top: 0.25pt solid #262626; }
+table.idx.sm td { text-transform: none; font-size: 7.4pt; }
+table.idx.sm td:first-child { white-space: nowrap; width: 34mm; }
+table.idx td.gl { white-space: nowrap; }
+table.idx.vec td.glyph { font-size: 13pt; line-height: 1; width: 8mm; }
+table.idx.vec td.verbs { text-transform: none; color: #b9b6ae; font-size: 6.4pt; }
+.sw { display: inline-block; width: 5mm; height: 2.4mm; }
+.bar { letter-spacing: -0.5pt; font-size: 6pt; }
+table.toc td { font-size: 8pt; padding: 1.6mm 3mm 1.6mm 0; }
+table.toc td.n { width: 8mm; text-align: right; font-size: 6.5pt; }
+table.toc td.r { width: 12mm; font-size: 6.5pt; }
+table.toc td.f { text-align: right; width: 10mm; }
+pre.code { font-family: "JetBrains Mono", Menlo, monospace; font-size: 7.4pt; line-height: 1.6; margin: 0 0 7mm 40mm; padding: 5mm 6mm; background: #151515; white-space: pre; }
+pre.code span { color: #8f8c85; }
+/* anatomy */
+.anat { position: relative; }
+.mk { position: absolute; transform: translate(-30%, -30%); width: 4.2mm; height: 4.2mm; background: #ece9e2; color: #0d0d0d; font-size: 6.2pt; font-weight: 700; display: grid; place-items: center; }
+.mk.s { position: static; transform: none; flex: 0 0 auto; }
+.legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm 6mm; margin-top: 3mm; }
+.lg { display: flex; gap: 2.5mm; } .lg b { font-size: 7.4pt; } .lg p { font-size: 7pt; line-height: 1.4; }
+/* architecture */
+.arch { display: flex; align-items: stretch; gap: 2mm; margin: 0 0 9mm 0; }
+.arch .box { flex: 1; border: 0.4pt solid #ece9e2; padding: 3mm; display: flex; flex-direction: column; gap: 1.5mm; }
+.arch .box b { font-size: 7.4pt; } .arch .box span { font-size: 6.6pt; line-height: 1.4; color: #b9b6ae; }
+.arch i { font-style: normal; align-self: center; font-size: 10pt; }
+.ic { display: inline-flex; vertical-align: -3pt; margin-right: 1.5mm; }
+/* symbols */
+.sym { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm 10mm; }
+.symg h3 { font-size: 7pt; font-weight: 700; text-transform: uppercase; margin-bottom: 2.5mm; }
+.sy { display: grid; grid-template-columns: 11mm 26mm 1fr; align-items: center; border-top: 0.25pt solid #262626; padding: 1.3mm 0; font-size: 7pt; }
+.sy .s { font-size: 11pt; line-height: 1; } .sy b { font-weight: 700; }
+/* cover */
+.cover { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.cover .logo { width: 46mm; } .cover .logo svg { width: 100%; height: auto; display: block; }
+.cover .logo svg g { fill: #ece9e2; }
+.cover .title { margin-top: 12mm; text-align: center; display: flex; flex-direction: column; gap: 1.2mm; }
+.cover .title b { font-size: 11pt; font-weight: 700; } .cover .title span { font-size: 11pt; }
+.cover .foot { position: absolute; left: 16mm; right: 16mm; bottom: 14mm; display: flex; justify-content: space-between; font-size: 6.5pt; }
+</style></head><body><section class="page cover">
+  <div class="logo"><svg xmlns="http://www.w3.org/2000/svg" width="1600" height="280" viewBox="0 0 560 100">
+
+<g fill="#fff" transform="translate(0 -15)">
+<!-- C: horizontal parallel terminals with a continuous optically rounded outer bowl -->
+<path d="M159 49 H67 C50.4 49 37 62.4 37 79.5 S50.4 110 67 110 H159 V93 H67 C59.5 93 54 87.4 54 79.5 S59.5 66 67 66 H159 Z" transform="translate(0 -14)"/>
+<!-- I: optical rectangular bar -->
+<rect x="168" y="35" width="17" height="61" rx="0.6"/>
+<!-- joined C-F: second C flowing into an extended F, softened on inner radii -->
+<path d="M321 35 H220 C204.2 35 192 48.1 192 64.9 C192 82.1 204.3 96 220 96 H302 L321 76 H401 L416 61 H336 L346 51 H427 L442 35 H339 C335.5 35 331.9 36.6 329.4 39.2 L296 79 H221 C214 79 209 72.8 209 65 C209 57 214.6 51 222 51 H307 Z"/>
+<!-- A: refined smooth crown and continuous diagonal terminals -->
+<path d="M397 96 L455.5 38.7 C459.1 35.1 463.1 33.4 468.5 33.4 C474 33.4 478.1 35.1 482 39 L539 96 H516 L470.5 51.7 C469.1 50.4 467.6 50.4 466.2 51.8 L420 96 Z"/>
+</g>
+</svg>
+</div>
+  <div class="title"><b>CICFA Monitor</b><span>Manual de operaciones</span></div>
+  <div class="foot"><span>DWG-CICFA-01</span><span>Edición II</span><span>Buenos Aires · Noviembre 2026</span></div>
+</section><section class="page">
+  <header class="rh"><b>CICFA Monitor</b><span>Índice</span><i>02</i></header>
+  <div class="opener"><div class="lab"></div><div class="main"><h1>Índice</h1></div></div>
+  <div class="row"><div class="lab"><b>Master Index</b></div><div class="main"><table class="idx toc"><tbody>
+    <tr><td class="n">1</td><td class="r">I</td><td><b>QUÉ ES CICFA</b></td><td class="f">03</td></tr><tr><td class="n">2</td><td class="r">II</td><td><b>ANATOMÍA DE LA PANTALLA</b></td><td class="f">04</td></tr><tr><td class="n">3</td><td class="r">III</td><td><b>CYBER WEAPONS LAB</b></td><td class="f">05</td></tr><tr><td class="n">4</td><td class="r">IV</td><td><b>AGENTES EN EL VPS</b></td><td class="f">06</td></tr><tr><td class="n">5</td><td class="r">V</td><td><b>PROTOCOLO DE INYECCIÓN</b></td><td class="f">07</td></tr><tr><td class="n">6</td><td class="r">VI</td><td><b>VECTORES</b></td><td class="f">08</td></tr><tr><td class="n">7</td><td class="r">VII</td><td><b>RESULTADOS Y AMENAZA</b></td><td class="f">09</td></tr><tr><td class="n">8</td><td class="r">VIII</td><td><b>THREAT TELEMETRY</b></td><td class="f">10</td></tr><tr><td class="n">9</td><td class="r">IX</td><td><b>MAPA</b></td><td class="f">11</td></tr><tr><td class="n">10</td><td class="r">X</td><td><b>SATÉLITE Y TILT</b></td><td class="f">12</td></tr><tr><td class="n">11</td><td class="r">XI</td><td><b>GLOBO Y RED</b></td><td class="f">13</td></tr><tr><td class="n">12</td><td class="r">XII</td><td><b>TARGET PROFILE</b></td><td class="f">14</td></tr><tr><td class="n">13</td><td class="r">XIII</td><td><b>TARGET PROFILE · OPERACIÓN</b></td><td class="f">15</td></tr><tr><td class="n">14</td><td class="r">XIV</td><td><b>MASTER INDEX</b></td><td class="f">16</td></tr><tr><td class="n">15</td><td class="r">XV</td><td><b>SÍMBOLOS</b></td><td class="f">17</td></tr><tr><td class="n">16</td><td class="r">XVI</td><td><b>FUENTES Y EDICIONES</b></td><td class="f">18</td></tr>
+  </tbody></table></div></div>
+</section><section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Qué es CICFA</span><i>03</i></header>
+    <div class="opener"><div class="lab"><b>I</b></div><div class="main"><h1>Qué es CICFA</h1><p class="lede">Cultural Infrastructure Critical Failure Attack. Un monitor de vigilancia en tiempo real sobre el sistema del arte: 2.718 instituciones en el mundo, Buenos Aires en el centro, observadas por una flota de armas ciberculturales.</p></div></div>
+  <div class="row"><div class="lab">Obra</div><div class="main"><p>CICFA MONITOR es una pieza que adopta la estética de las salas de operaciones —la vista de dios, el mapa que todo lo ve, la telemetría que nunca duerme— y la dirige hacia museos, galerías, fundaciones, bienales y espacios autogestionados. La pantalla no informa: escenifica. Cada operación que cruza el mapa ataca la <em>arquitectura simbólica</em> de una institución —su texto curatorial, su lista de donantes, su autoridad— nunca sus sistemas.</p>
+  <p>La plataforma combina dos capas que conviven en la misma pantalla y nunca se mezclan: una capa <b>real</b>, construida con fuentes abiertas (dónde está cada institución, cuándo abre, quién la dirige, cómo se ve desde el satélite y desde la calle), y una capa de <b>operaciones</b>, donde las armas del Cyber Weapons Lab actúan sobre el monitor.</p></div></div>
+  <div class="row"><div class="lab">Edición</div><div class="main"><p>Este manual documenta la <b>Edición II</b> (<span class="mono">/v2</span>): off-black, Helvetica, jerarquía tipográfica de índice editorial, color solo donde es necesario. La Edición I —terminal monoespaciada, rayas glitch— sigue disponible en la raíz del sitio.</p></div></div>
+  <div class="row"><div class="lab">Acceso</div><div class="main"><p class="mono">n333k0.github.io/cicfa-monitor/v2/</p></div></div>
+  <figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/home.jpg"/><figcaption>Edición II · vista MAP, estado inicial</figcaption></figure>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Anatomía de la pantalla</span><i>04</i></header>
+    <div class="opener"><div class="lab"><b>II</b></div><div class="main"><h1>Anatomía de la pantalla</h1><p class="lede">Dos columnas espejadas sobre el mapa: a la izquierda quién ataca y a quién; a la derecha cuánto, cómo y en qué orden. En el centro, el territorio.</p></div></div>
+  <figure class="anat"><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/home.jpg"/><span class="mk" style="left:5.714285714285714%;top:5.714285714285714%">1</span><span class="mk" style="left:5.714285714285714%;top:22.962962962962962%">2</span><span class="mk" style="left:5.714285714285714%;top:66.98412698412697%">3</span><span class="mk" style="left:5.714285714285714%;top:82.96296296296296%">4</span><span class="mk" style="left:24.166666666666668%;top:22.962962962962962%">5</span><span class="mk" style="left:24.166666666666668%;top:5.82010582010582%">6</span><span class="mk" style="left:68.86904761904762%;top:7.830687830687831%">7</span><span class="mk" style="left:78.57142857142857%;top:5.714285714285714%">8</span><span class="mk" style="left:78.57142857142857%;top:31.53439153439154%">9</span><span class="mk" style="left:78.57142857142857%;top:53.96825396825397%">10</span><span class="mk" style="left:41.785714285714285%;top:87.3015873015873%">11</span><span class="mk" style="left:4.761904761904762%;top:93.43915343915344%">12</span><span class="mk" style="left:88.92857142857142%;top:95.55555555555556%">13</span></figure>
+  <div class="legend"><div class="lg"><span class="mk s">1</span><div><b>Marca + vistas</b><p>Logo ASCII (figlet Caligraphy2) y selector Map · Globe · Network.</p></div></div><div class="lg"><span class="mk s">2</span><div><b>Cyber Weapons Lab</b><p>Las diez armas: estado, golpes acumulados, codename y nodo de origen.</p></div></div><div class="lg"><span class="mk s">3</span><div><b>Most-Targeted</b><p>Las 30 instituciones más golpeadas. Click → Target Profile.</p></div></div><div class="lg"><span class="mk s">4</span><div><b>Region Filter</b><p>Siete regiones; apagar una retira sus instituciones y operaciones del mapa.</p></div></div><div class="lg"><span class="mk s">5</span><div><b>Signal Buffer // Raw</b><p>Cascada de señal cruda: dirección, prioridad, operación, objetivo simbólico, checksum.</p></div></div><div class="lg"><span class="mk s">6</span><div><b>Franja de clasificación</b><p>REC + reloj UTC, código de la obra y teletipo de fuentes vivas.</p></div></div><div class="lg"><span class="mk s">7</span><div><b>Coordenadas</b><p>Centro de la vista en MGRS real, grados-minutos-segundos y altitud de cámara.</p></div></div><div class="lg"><span class="mk s">8</span><div><b>Spec block</b><p>Totales de la corrida: operaciones, eventos, ritmo, resultados, volumen exfiltrado.</p></div></div><div class="lg"><span class="mk s">9</span><div><b>Threat Telemetry</b><p>Distribución por vector. Click en un vector para filtrarlo.</p></div></div><div class="lg"><span class="mk s">10</span><div><b>Event Stream</b><p>Interceptación en vivo de cada operación resuelta.</p></div></div><div class="lg"><span class="mk s">11</span><div><b>Menú de íconos</b><p>Map, Globe, Network, Satélite, Tilt, Master Index.</p></div></div><div class="lg"><span class="mk s">12</span><div><b>Teletipo</b><p>Las últimas operaciones en una línea continua.</p></div></div><div class="lg"><span class="mk s">13</span><div><b>Exfil total</b><p>Volumen simbólico acumulado extraído de los registros.</p></div></div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Cyber Weapons Lab</span><i>05</i></header>
+    <div class="opener"><div class="lab"><b>III</b></div><div class="main"><h1>Cyber Weapons Lab</h1><p class="lede">Diez armas, cada una con un nombre de guerra, una doctrina (codename), un nodo de origen en el mapa, un conector y un repertorio de vectores. Son los operadores de la obra.</p></div></div>
+  <table class="idx">
+    <thead><tr><th>#</th><th>Arma</th><th>Codename</th><th>Origen</th><th>Vectores</th><th>Cad.</th><th>Con.</th><th>Estado</th></tr></thead>
+    <tbody><tr><td>I</td><td><b>BOYCOTTWARE™</b></td><td>MARKET DEPRAVATION</td><td>BRUSSELS RELAY</td><td class="gl"><span title="RANSOM">☢</span> RANSOM<br/><span title="MANIFEST">✖</span> MANIFEST<br/><span title="BREACH">⚿</span> BREACH</td><td>10</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>II</td><td><b>META_RANSOM</b></td><td>HIJACK ENVIRONMENT</td><td>LONDON NODE</td><td class="gl"><span title="RANSOM">☢</span> RANSOM<br/><span title="BREACH">⚿</span> BREACH<br/><span title="DEADDROP">⌁</span> DEADDROP</td><td>11</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>III</td><td><b>MERCADO_CENTRAL</b></td><td>ART-AS-A-SERVICE</td><td>BUENOS AIRES MESH</td><td class="gl"><span title="EXFIL">⬓</span> EXFIL<br/><span title="RECON">◇</span> RECON<br/><span title="LURE">✉</span> LURE</td><td>13</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>IV</td><td><b>CODE_PASTA</b></td><td>COPYPASTA</td><td>SÃO PAULO FLOOD</td><td class="gl"><span title="PASTA">≋</span> PASTA<br/><span title="MANIFEST">✖</span> MANIFEST<br/><span title="LURE">✉</span> LURE</td><td>15</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>V</td><td><b>MANIFESTO.EXE</b></td><td>WALL-TEXT OVERWRITE</td><td>BERLIN CELL</td><td class="gl"><span title="MANIFEST">✖</span> MANIFEST<br/><span title="BREACH">⚿</span> BREACH<br/><span title="RECON">◇</span> RECON</td><td>8</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>VI</td><td><b>PROVENANCE_WORM</b></td><td>ARCHIVE SIPHON</td><td>DUBAI DARK POOL</td><td class="gl"><span title="EXFIL">⬓</span> EXFIL<br/><span title="IMPLANT">◉</span> IMPLANT<br/><span title="DEADDROP">⌁</span> DEADDROP</td><td>9</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>VII</td><td><b>NULL_CURATOR</b></td><td>AUTHORITY DISSOLVE</td><td>TOKYO WATCHPOST</td><td class="gl"><span title="BREACH">⚿</span> BREACH<br/><span title="RECON">◇</span> RECON<br/><span title="LURE">✉</span> LURE</td><td>12</td><td>ENGINE</td><td class="">LIVE</td></tr><tr><td>VIII</td><td><b>DEAD_DROP</b></td><td>CONCEPTUAL IMPLANT</td><td>SINGAPORE EDGE</td><td class="gl"><span title="DEADDROP">⌁</span> DEADDROP<br/><span title="IMPLANT">◉</span> IMPLANT<br/><span title="RECON">◇</span> RECON</td><td>7</td><td>ENGINE</td><td class="crit">DEGRADED</td></tr><tr><td>IX</td><td><b>IRONIC_DDOS</b></td><td>VOLUMETRIC IRONY</td><td>SEATTLE FARM</td><td class="gl"><span title="DDOS">⟱</span> DDOS<br/><span title="PASTA">≋</span> PASTA</td><td>—</td><td>WEBHOOK</td><td class="">IDLE</td></tr><tr><td>X</td><td><b>CASCADE_07</b></td><td>CASCADE FAILURE</td><td>MOSCOW DORMANT</td><td class="gl"><span title="RECON">◇</span> RECON<br/><span title="DDOS">⟱</span> DDOS<br/><span title="BREACH">⚿</span> BREACH</td><td>—</td><td>MCP</td><td class="">OFFLINE</td></tr></tbody>
+  </table>
+  <div class="cols2">
+    <div class="row"><div class="lab">Cadencia</div><div class="main"><p>Operaciones por minuto que el arma intenta por su cuenta (×1,9 de actividad global). Una cadencia en blanco significa que el arma no dispara sola: espera a un agente.</p></div></div>
+    <div class="row"><div class="lab">Estado</div><div class="main"><p>LIVE — opera según su cadencia<br/>DEGRADED — opera con fallas (≈60% de sus disparos)<br/>IDLE — armada, sin cadencia propia; dispara solo si un agente la acciona<br/>OFFLINE — fuera de servicio</p></div></div>
+    <div class="row"><div class="lab">Conector</div><div class="main"><p><b>ENGINE</b> — el motor local de la obra decide objetivo y vector. <b>WEBHOOK</b> y <b>MCP</b> — el arma recibe órdenes de un agente externo (ver IV).</p></div></div>
+    <div class="row"><div class="lab">Interacción</div><div class="main"><p>Click en un arma: la selecciona y abre sus controles — <b>Deploy</b> (disparo inmediato), <b>Solo</b> (el mapa muestra solo sus operaciones), <b>Bring online / Take offline</b>.</p></div></div>
+  </div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Agentes en el VPS</span><i>06</i></header>
+    <div class="opener"><div class="lab"><b>IV</b></div><div class="main"><h1>Agentes en el VPS</h1><p class="lede">Cada arma puede quedar conectada a un agente autónomo que corre sin guion en el servidor de CICFA. El agente elige, decide y escribe; el monitor hace visible lo que hizo.</p></div></div>
+  <div class="arch">
+    <div class="box"><b>VPS · CICFA</b><span>agentes autónomos<br/>modo godmode · sin guion</span></div><i>→</i>
+    <div class="box"><b>Agente ↔ Arma</b><span>un agente por arma<br/>BOYCOTTWARE™, META_RANSOM…</span></div><i>→</i>
+    <div class="box"><b>Feed de operaciones</b><span>WebSocket · postMessage<br/>window.CICFA.inject</span></div><i>→</i>
+    <div class="box"><b>Motor del monitor</b><span>valida · lanza · resuelve<br/>registra · cuenta</span></div><i>→</i>
+    <div class="box"><b>Pantalla</b><span>arco · píxel · anillo<br/>stream · telemetría · perfil</span></div>
+  </div>
+  <div class="row"><div class="lab">Godmode</div><div class="main"><p>Un agente “unleashed” opera con autonomía total dentro de su arma: decide <b>a quién</b> (cualquiera de las 2.718 instituciones del índice), <b>con qué</b> (uno de sus vectores), <b>cuándo</b> (su propio ritmo), <b>con qué fuerza</b> (severidad 1–5) y <b>con qué palabras</b> (la línea que aparece en el Event Stream). Puede leer la telemetría y el Most-Targeted para elegir su próxima jugada, insistir sobre un objetivo o cambiar de doctrina.</p></div></div>
+  <div class="row"><div class="lab">Cadena</div><div class="main"><p>El agente publica cada operación en el feed. El motor la valida (arma e institución deben existir), la lanza desde el nodo de origen del arma, la hace viajar por el mapa, la resuelve y la deja asentada en el registro, el contador de golpes, el dossier de la institución y la telemetría. Una operación inyectada es indistinguible, en pantalla, de una del motor local.</p></div></div>
+  <div class="row"><div class="lab">Reglas de enfrentamiento</div><div class="main"><p>El único territorio de las armas es el monitor. Los agentes escriben en el feed de CICFA y en ningún otro lugar: no envían tráfico a las instituciones, no tocan sus redes, sus sitios ni sus cuentas. Lo único que la plataforma toma del mundo son fuentes abiertas, de solo lectura (ver XV). La violencia sucede en la representación — ahí es donde la obra la pone.</p></div></div>
+  <div class="row"><div class="lab">Estados</div><div class="main"><p>Un arma con conector WEBHOOK o MCP figura IDLE hasta que su agente la acciona. Al recibir operaciones pasa a LIVE en el Cyber Weapons Lab.</p></div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Protocolo de inyección</span><i>07</i></header>
+    <div class="opener"><div class="lab"><b>V</b></div><div class="main"><h1>Protocolo de inyección</h1><p class="lede">Lo que un agente envía para que una operación exista. Cinco campos; dos obligatorios.</p></div></div>
+  <pre class="code">{
+  "agentId":  "mercado",                 <span>// arma que dispara (obligatorio)</span>
+  "targetId": "malba",                   <span>// institución del índice (obligatorio)</span>
+  "vector":   "exfiltration",            <span>// uno de los 10 vectores</span>
+  "severity": 4,                         <span>// 1 – 5</span>
+  "line":     "donor-list pull from MALBA · Buenos Aires"
+}</pre>
+  <div class="row"><div class="lab">Canales</div><div class="main"><p><b>WebSocket</b> — el monitor se suscribe a un feed (<span class="mono">attachWebSocketFeed(url)</span>); cada mensaje JSON es una operación.<br/><b>postMessage</b> — una página anfitriona envía <span class="mono">{ type: "cicfa:inject", payload }</span>.<br/><b>Consola / script</b> — <span class="mono">window.CICFA.inject(payload)</span>.</p></div></div>
+  <div class="row"><div class="lab">Completado</div><div class="main"><p>Lo que el agente no define lo completa el motor: vector según el repertorio del arma, severidad según el vector (RANSOM pega más fuerte), línea con uno de los verbos del vector. Arma o institución inexistentes: la operación se rechaza.</p></div></div>
+  <div class="row"><div class="lab">Vida de una operación</div><div class="main"><table class="idx sm"><tbody>
+    <tr><td><b>INFLIGHT</b></td><td>Sale del nodo de origen. Viaja ~2,2 s + 0,9 ms por km + variación. En el mapa: arco + píxel con su glifo.</td></tr>
+    <tr><td><b>IMPACT</b></td><td>Llega. Se suma un golpe a la institución y al arma; crece su anillo.</td></tr>
+    <tr><td><b>RESOLVED</b></td><td>1,1 s después se decide el resultado y entra al Event Stream, al Attack Log del dossier y a la telemetría.</td></tr></tbody></table></div></div>
+  <div class="row"><div class="lab">Resultado</div><div class="main"><p>Vulnerabilidad = 0,35 + 0,06 × severidad. Con probabilidad 0,45 × vulnerabilidad: <b class="crit">breach</b>. Hasta la vulnerabilidad completa: <b>exposed</b> si el vector es EXFIL, si no <b>contained</b>. El resto: <b>blocked</b>.</p></div></div>
+  <div class="row"><div class="lab">Prueba</div><div class="main"><p>Verificado el 2 de noviembre de 2026: la operación de arriba, inyectada en la Edición II, salió de BUENOS AIRES MESH, golpeó MALBA con EXFIL severidad 4 y apareció con su propia línea.</p></div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Vectores</span><i>08</i></header>
+    <div class="opener"><div class="lab"><b>VI</b></div><div class="main"><h1>Vectores</h1><p class="lede">Diez maneras de atacar una institución sin tocarla. Cada vector tiene un glifo —el que acompaña al píxel en el mapa y a cada línea del stream— y apunta a un activo simbólico.</p></div></div>
+  <table class="idx vec">
+    <thead><tr><th></th><th>Vector</th><th>Id</th><th>Activo</th><th>Si prospera</th><th>Verbos</th><th>Ed. I</th></tr></thead>
+    <tbody><tr><td class="glyph">◇</td><td><b>RECON</b></td><td class="mono">recon</td><td>POWER_MAP</td><td>MAPPED</td><td class="verbs">power-flow mapping of · structural recon of · passive map of · asset enumeration of</td><td><i class="sw" style="background:rgb(200,205,215)"></i></td></tr><tr><td class="glyph">✉</td><td><b>LURE</b></td><td class="mono">phishing</td><td>PRESS_KIT</td><td>SPOOFED</td><td class="verbs">pretext lure to · credential theatre at · spoofed invite to · spear-lure of</td><td><i class="sw" style="background:rgb(255,166,189)"></i></td></tr><tr><td class="glyph">≋</td><td><b>PASTA</b></td><td class="mono">spam</td><td>SOCIAL_FEED</td><td>FLOODED</td><td class="verbs">code-pasta flood of · list flood of · channel saturation of · copypasta drop on</td><td><i class="sw" style="background:rgb(153,153,153)"></i></td></tr><tr><td class="glyph">⚿</td><td><b>BREACH</b></td><td class="mono">intrusion</td><td>BOARD_MINUTES</td><td>BREACHED</td><td class="verbs">symbolic breach of · authority dissolve at · lateral move inside · foothold on</td><td><i class="sw" style="background:rgb(230,0,38)"></i></td></tr><tr><td class="glyph">⬓</td><td><b>EXFIL</b></td><td class="mono">exfiltration</td><td>DONOR_REGISTRY</td><td>EXFILTRATED</td><td class="verbs">provenance siphon from · donor-list pull from · archive exfil from · registry dump from</td><td><i class="sw" style="background:rgb(255,0,102)"></i></td></tr><tr><td class="glyph">☢</td><td><b>RANSOM</b></td><td class="mono">ransomware</td><td>WALL_TEXT</td><td>LOCKED</td><td class="verbs">meta-ransom hijack of · page-lock of · countdown-to-nothing at · mirror-lock of</td><td><i class="sw" style="background:rgb(255,42,42)"></i></td></tr><tr><td class="glyph">✖</td><td><b>MANIFEST</b></td><td class="mono">defacement</td><td>CURATORIAL_TEXT</td><td>OVERWRITTEN</td><td class="verbs">manifesto injection on · curatorial overwrite of · wall-text hijack at · redaction of</td><td><i class="sw" style="background:rgb(255,80,160)"></i></td></tr><tr><td class="glyph">⟱</td><td><b>DDOS</b></td><td class="mono">ddos</td><td>TICKETING_NODE</td><td>SATURATED</td><td class="verbs">ironic DDOS of · volumetric flood of · ticketing overload at · edge saturation of</td><td><i class="sw" style="background:rgb(255,110,90)"></i></td></tr><tr><td class="glyph">◉</td><td><b>IMPLANT</b></td><td class="mono">implant</td><td>ARCHIVE_VAULT</td><td>IMPLANTED</td><td class="verbs">conceptual implant in · persistence staged at · exploit seeded at · backdoor concept in</td><td><i class="sw" style="background:rgb(190,130,255)"></i></td></tr><tr><td class="glyph">⌁</td><td><b>DEADDROP</b></td><td class="mono">beacon</td><td>PROVENANCE_DB</td><td>BEACONING</td><td class="verbs">dead-drop callback from · heartbeat from · telemetry from · C2 check-in from</td><td><i class="sw" style="background:rgb(120,255,170)"></i></td></tr></tbody>
+  </table>
+  <div class="row"><div class="lab">Peso</div><div class="main"><p>Cada arma elige entre sus vectores con un peso propio de cada uno: RECON y LURE son frecuentes; RANSOM y MANIFEST, raros y pesados. En la Edición I cada vector tiene un color; en la Edición II todo es off-white y solo la brecha es roja.</p></div></div>
+  <figure style="margin-left:40mm"><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/packets-c.jpg"/><figcaption>Píxeles en vuelo: cabeza + estela de dos píxeles y el glifo del vector (☢ ransom, ✉ lure, ◇ recon…)</figcaption></figure>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Resultados y amenaza</span><i>09</i></header>
+    <div class="opener"><div class="lab"><b>VII</b></div><div class="main"><h1>Resultados y amenaza</h1><p class="lede">Cómo termina cada operación y cómo se acumula sobre una institución.</p></div></div>
+  <div class="row"><div class="lab">Resultados</div><div class="main"><table class="idx sm"><tbody>
+    <tr><td class="crit"><b>breach</b></td><td>La operación prospera. El activo del vector cambia de estado (OVERWRITTEN, LOCKED, EXFILTRATED…). Único resultado en rojo.</td></tr>
+    <tr><td><b>exposed</b></td><td>Solo EXFIL: el registro quedó expuesto. Suma al volumen exfiltrado.</td></tr>
+    <tr><td><b>contained</b></td><td>Hubo contacto; la institución lo contuvo. El activo queda PROBED.</td></tr>
+    <tr><td><b>blocked</b></td><td>Rechazada en el borde.</td></tr></tbody></table></div></div>
+  <div class="row"><div class="lab">Nivel de amenaza</div><div class="main"><p>Puntaje = golpes + 2 × brechas.</p><table class="idx sm"><tbody><tr><td class=""><b>LOW</b></td><td class="mono">0 – 1</td><td class="mono bar">█░░░░░░░░░░░░░░░░░░░</td></tr><tr><td class=""><b>GUARDED</b></td><td class="mono">2 – 4</td><td class="mono bar">████░░░░░░░░░░░░░░░░</td></tr><tr><td class=""><b>ELEVATED</b></td><td class="mono">5 – 8</td><td class="mono bar">████████░░░░░░░░░░░░</td></tr><tr><td class="crit"><b>HIGH</b></td><td class="mono">9 – 14</td><td class="mono bar">█████████████░░░░░░░</td></tr><tr><td class="crit"><b>CRITICAL</b></td><td class="mono">15 +</td><td class="mono bar">████████████████████</td></tr></tbody></table></div></div>
+  <div class="row"><div class="lab">Countdown to nothing</div><div class="main"><p>Cada institución tiene su propio plazo —entre 45 segundos y 5 minutos— que corre en el dossier hasta llegar a cero y resolverse en <b>NOTHING HAPPENED</b>. Después vuelve a empezar. La amenaza nunca se cumple; solo se repite.</p></div></div>
+  <div class="row"><div class="lab">Lenguaje institucional</div><div class="main"><p>El texto con que una institución se describe a sí misma se degrada en el dossier a medida que acumula brechas: hasta un 55 % de sus caracteres son reemplazados por █ ▓ ▒ ░ # % & @. La autoridad del texto se disuelve a la vista.</p></div></div>
+  <div class="row"><div class="lab">Activos simbólicos</div><div class="main"><table class="idx sm"><tbody><tr><td><b>CURATORIAL_TEXT</b></td><td>✖ MANIFEST</td><td>INTACT → PROBED → OVERWRITTEN</td></tr><tr><td><b>DONOR_REGISTRY</b></td><td>⬓ EXFIL</td><td>INTACT → PROBED → EXFILTRATED</td></tr><tr><td><b>WALL_TEXT</b></td><td>☢ RANSOM</td><td>INTACT → PROBED → LOCKED</td></tr><tr><td><b>BOARD_MINUTES</b></td><td>⚿ BREACH</td><td>INTACT → PROBED → BREACHED</td></tr><tr><td><b>ARCHIVE_VAULT</b></td><td>◉ IMPLANT</td><td>INTACT → PROBED → IMPLANTED</td></tr><tr><td><b>PRESS_KIT</b></td><td>✉ LURE</td><td>INTACT → PROBED → SPOOFED</td></tr><tr><td><b>TICKETING_NODE</b></td><td>⟱ DDOS</td><td>INTACT → PROBED → SATURATED</td></tr><tr><td><b>SOCIAL_FEED</b></td><td>≋ PASTA</td><td>INTACT → PROBED → FLOODED</td></tr><tr><td><b>PROVENANCE_DB</b></td><td>⌁ DEADDROP</td><td>INTACT → PROBED → BEACONING</td></tr><tr><td><b>POWER_MAP</b></td><td>◇ RECON</td><td>INTACT → PROBED → MAPPED</td></tr></tbody></table></div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Threat Telemetry</span><i>10</i></header>
+    <div class="opener"><div class="lab"><b>VIII</b></div><div class="main"><h1>Threat Telemetry</h1><p class="lede">La columna derecha: el estado de la corrida en números, la mezcla de vectores y la interceptación en vivo.</p></div></div>
+  <div class="split"><figure class="tall"><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/col-r.jpg"/></figure><div>
+    <div class="row"><div class="lab">Spec block</div><div class="main"><table class="idx sm"><tbody>
+      <tr><td><b>Institutions</b></td><td>Tamaño del índice (2.718).</td></tr>
+      <tr><td><b>Operations live</b></td><td>Armas LIVE o DEGRADED sobre el total.</td></tr>
+      <tr><td><b>In flight</b></td><td>Operaciones viajando ahora mismo.</td></tr>
+      <tr><td><b>Events logged</b></td><td>Operaciones lanzadas desde el inicio.</td></tr>
+      <tr><td><b>Ops per minute</b></td><td>Ritmo del último minuto.</td></tr>
+      <tr><td class="crit"><b>Breaches</b></td><td>Operaciones que prosperaron.</td></tr>
+      <tr><td><b>Exposed · Contained · Blocked</b></td><td>El resto de los resultados.</td></tr>
+      <tr><td><b>Exfiltrated</b></td><td>Volumen simbólico extraído (EXFIL exposed).</td></tr></tbody></table></div></div>
+    <div class="row"><div class="lab">Distribución</div><div class="main"><p>Cantidad de operaciones por vector. Cada fila es un filtro: click para apagar o encender ese vector en todo el monitor.</p></div></div>
+    <div class="row"><div class="lab">Event Stream</div><div class="main"><p>Cada línea: <b>hora</b> · <b>glifo del vector</b> · <b>ARMA</b> línea de la operación · <b>resultado</b>. La más nueva entra abajo; click en una línea abre el dossier de la institución.</p></div></div>
+  </div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Mapa</span><i>11</i></header>
+    <div class="opener"><div class="lab"><b>IX</b></div><div class="main"><h1>Mapa</h1><p class="lede">La vista principal. Un mundo de líneas finas que se convierte en ciudad al acercarse.</p></div></div>
+  <figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/city.jpg"/><figcaption>Buenos Aires a nivel ciudad: calles, barrios y las instituciones con nombre</figcaption></figure>
+  <div class="cols2">
+    <div class="row"><div class="lab">Capas</div><div class="main"><p>Costas, fronteras y graticula a escala mundial; al acercarse, la ciudad (OpenFreeMap): calles por jerarquía, agua, parques, edificios y nombres. Los puntos blancos son las 2.718 instituciones; a partir de cierto zoom todas llevan nombre.</p></div></div>
+    <div class="row"><div class="lab">Marcas</div><div class="main"><p><b>Anillo rojo</b> — institución golpeada; crece con los golpes. <b>Arco</b> — trayecto de una operación. <b>Píxel + glifo</b> — la operación en vuelo. <b>Nombre en rojo</b> — nodo de origen de un arma. <b>▣ celeste</b> — cámara pública de tránsito.</p></div></div>
+    <div class="row"><div class="lab">Selección</div><div class="main"><p>Click en una institución: el mapa vuela hacia ella, traza arcos desde sus agresores y líneas a sus seis vecinas más cercanas, y abre el Target Profile.</p></div></div>
+    <div class="row"><div class="lab">Cámaras</div><div class="main"><p>Donde existe un catálogo oficial y abierto (Londres, Los Ángeles, San Francisco, San Diego, Austin, Singapur), las cámaras de tránsito aparecen sobre el mapa; al pasar el mouse se ve su imagen en vivo.</p></div></div>
+  </div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Satélite + Tilt</span><i>12</i></header>
+    
+  <div class="opener"><div class="lab"><b>X</b></div><div class="main"><h1>Satélite y Tilt</h1><p class="lede">Los dos controles de cámara del menú de íconos.</p></div></div>
+  <figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/sat-tilt.jpg"/><figcaption>Palermo, Buenos Aires: imagen satelital real con la cámara inclinada</figcaption></figure>
+  <div class="cols2">
+    <div class="row"><div class="lab"><span class="ic"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="4" height="4" transform="rotate(45 9 9)"/><path d="M5.5 5.5L2.5 2.5M12.5 12.5l3 3M3.8 7.6l3.8-3.8M10.4 14.2l3.8-3.8"/><path d="M13.5 2.5a2 2 0 0 1 2 2"/></svg></span> Satélite</div><div class="main"><p>Reemplaza el fondo por imagen satelital real (Esri World Imagery), desaturada para que las líneas del monitor sigan mandando. Tecla <b>S</b>.</p></div></div>
+    <div class="row"><div class="lab"><span class="ic"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 14.5h15L13 7H5z"/><path d="M5.8 10.8h6.4M7.2 7l-1 7.5M10.8 7l1 7.5"/></svg></span> Tilt</div><div class="main"><p>Inclina la cámara 50°: la vista oblicua de dios sobre la ciudad. Tecla <b>T</b>.</p></div></div>
+  </div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Globo y Red</span><i>13</i></header>
+    <div class="opener"><div class="lab"><b>XI</b></div><div class="main"><h1>Globo y Red</h1><p class="lede">Dos maneras más de mirar lo mismo.</p></div></div>
+  <div class="pair ctr"><figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/globe-c.jpg"/><figcaption>Globo</figcaption></figure><figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/network-c.jpg"/><figcaption>Red</figcaption></figure></div>
+  <div class="cols2">
+    <div class="row"><div class="lab"><span class="ic"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7"/><ellipse cx="9" cy="9" rx="3" ry="7"/><path d="M2 9h14M3.2 5h11.6M3.2 13h11.6"/></svg></span> Globo</div><div class="main"><p>Planeta rojo: océano oscuro, tierra carmesí, costas brillantes y atmósfera. Gira despacio sobre el Atlántico. Nombres de países y de las ciudades donde se concentran instituciones, con su cantidad. Los arcos se levantan sobre la superficie; lo que pasa por detrás no se ve.</p></div></div>
+    <div class="row"><div class="lab"><span class="ic"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="4.5" r="1.8"/><circle cx="14" cy="5" r="1.8"/><circle cx="9" cy="14" r="1.8"/><path d="M5.6 5.3l6.6.2M5 6l3.2 6.4M13.2 6.6L9.9 12.4"/></svg></span> Red</div><div class="main"><p>El mismo conflicto como grafo: armas en el centro, regiones en un anillo y las 48 instituciones más golpeadas, unidas por quién las atacó. Las distancias son de fuerza, no de geografía.</p></div></div>
+  </div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Target Profile</span><i>14</i></header>
+    <div class="opener"><div class="lab"><b>XII</b></div><div class="main"><h1>Target Profile</h1><p class="lede">El dossier de una institución. Se abre con un click en el mapa, en Most-Targeted, en el Event Stream o en el Master Index. Arriba lo real; abajo la operación.</p></div></div>
+  <div class="pair"><figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/profile-top.jpg"/><figcaption>Encabezado + inteligencia de fuentes abiertas</figcaption></figure><figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/profile-real2.jpg"/><figcaption>Registro institucional + reconocimiento</figcaption></figure></div>
+  <div class="row"><div class="lab">Encabezado</div><div class="main"><p>Número en el índice (0042 of 2,718), tipo y ciudad, nombre. Ficha: LAT · LON · PRM (prominencia ◆◆◆◆◇) · HIT (golpes) · SCN (escena). ◂ ▸ recorre el Most-Targeted; ✕ cierra.</p></div></div>
+  <div class="row"><div class="lab">Open source intelligence</div><div class="main"><p>De OpenStreetMap, en vivo: si está abierta ahora, horario, dirección, operador, año de fundación, accesibilidad, entrada libre o paga, teléfono, si es patrimonio protegido, descripción y enlaces.</p></div></div>
+  <div class="row"><div class="lab">Institutional record</div><div class="main"><p>De Wikidata: tipo, fundación, visitantes por año, tamaño de la colección, arquitecto, dirección, propietario, estilo, Instagram y X.</p></div></div>
+  <div class="row"><div class="lab">Reconnaissance</div><div class="main"><p>Imagen satelital de la manzana con retícula, y hasta cuatro cámaras públicas de tránsito en 2 km, con su imagen en vivo.</p></div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Target Profile · operación</span><i>15</i></header>
+    <div class="opener"><div class="lab"><b>XIII</b></div><div class="main"><h1>Target Profile · operación</h1><p class="lede">La mitad inferior del dossier registra lo que las armas le hicieron a la institución.</p></div></div>
+  <div class="pair"><figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/profile-street.jpg"/><figcaption>Calle: fotografías geolocalizadas de Wikimedia Commons</figcaption></figure><figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/profile-op.jpg"/><figcaption>Operación, lenguaje institucional, activos, agresores</figcaption></figure></div>
+  <div class="cols2">
+    <div class="row"><div class="lab">Street level</div><div class="main"><p>Seis fotografías públicas tomadas a menos de 600 m, con distancia y año. Funciona también donde no hay cámaras, como Buenos Aires.</p></div></div>
+    <div class="row"><div class="lab">Operation</div><div class="main"><p>Nivel de amenaza y barra, estado (bajo operación activa / compromiso sospechado / sin contacto), countdown to nothing, golpes · brechas · contenidas · bloqueadas, volumen exfiltrado.</p></div></div>
+    <div class="row"><div class="lab">Dossier</div><div class="main"><p><b>Institutional language</b> que se degrada; <b>Symbolic assets</b> y su estado; <b>Aggressors</b> (qué armas y cuántas veces); <b>Attack log</b> (las últimas diez); <b>Leak sample</b> (offset · activo · hash · etiqueta, sin verificar); <b>Linked nodes</b> (vecinas más cercanas).</p></div></div>
+    <div class="row"><div class="lab">Real / operación</div><div class="main"><p>Los bloques reales llevan una línea fina a la izquierda y nombran su fuente. Todo lo demás pertenece a la operación.</p></div></div>
+  </div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Master Index</span><i>16</i></header>
+    <div class="opener"><div class="lab"><b>XIV</b></div><div class="main"><h1>Master Index</h1><p class="lede">Las 2.718 instituciones como un catálogo impreso.</p></div></div>
+  <figure style=""><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/index.jpg"/><figcaption>Master Index · pliego 01 de 16</figcaption></figure>
+  <div class="cols2">
+    <div class="row"><div class="lab"><span class="ic"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h2M6.5 4h9M2.5 7.3h2M6.5 7.3h9M2.5 10.6h2M6.5 10.6h9M2.5 14h2M6.5 14h9"/></svg></span> Lectura</div><div class="main"><p>Número · romano · NOMBRE · ciudad · categoría. Si la institución fue golpeada, la categoría se reemplaza por sus golpes en rojo (2✕). Ordenadas por prominencia y nombre.</p></div></div>
+    <div class="row"><div class="lab">Uso</div><div class="main"><p>89 filas por página, dos páginas por pliego. ◂ ▸ o las flechas del teclado pasan de pliego; Esc cierra; click en un nombre abre su Target Profile.</p></div></div>
+  </div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Símbolos</span><i>17</i></header>
+    <div class="opener"><div class="lab"><b>XV</b></div><div class="main"><h1>Símbolos</h1><p class="lede">Todo lo que aparece en pantalla sin palabras.</p></div></div>
+  <div class="sym"><div class="symg"><h3>Vectores</h3><div class="sy"><span class="s">◇</span><b>RECON</b><span>POWER_MAP</span></div><div class="sy"><span class="s">✉</span><b>LURE</b><span>PRESS_KIT</span></div><div class="sy"><span class="s">≋</span><b>PASTA</b><span>SOCIAL_FEED</span></div><div class="sy"><span class="s">⚿</span><b>BREACH</b><span>BOARD_MINUTES</span></div><div class="sy"><span class="s">⬓</span><b>EXFIL</b><span>DONOR_REGISTRY</span></div><div class="sy"><span class="s">☢</span><b>RANSOM</b><span>WALL_TEXT</span></div><div class="sy"><span class="s">✖</span><b>MANIFEST</b><span>CURATORIAL_TEXT</span></div><div class="sy"><span class="s">⟱</span><b>DDOS</b><span>TICKETING_NODE</span></div><div class="sy"><span class="s">◉</span><b>IMPLANT</b><span>ARCHIVE_VAULT</span></div><div class="sy"><span class="s">⌁</span><b>DEADDROP</b><span>PROVENANCE_DB</span></div></div><div class="symg"><h3>Interfaz</h3><div class="sy"><span class="s">▸</span><b>Rollover</b><span>Todo lo clickeable muestra esta flecha al pasar el mouse</span></div><div class="sy"><span class="s">◂ ▸</span><b>Recorrer</b><span>Anterior / siguiente (dossier, índice)</span></div><div class="sy"><span class="s">✕</span><b>Cerrar</b><span>Dossier, índice</span></div><div class="sy"><span class="s">↗</span><b>Enlace externo</b><span>Sitio, Wikidata, OSM, Instagram, X</span></div><div class="sy"><span class="s">◆ ◇</span><b>Prominencia</b><span>Peso curatorial 1–5 de la institución</span></div><div class="sy"><span class="s">● ○</span><b>Abierto / cerrado</b><span>Calculado ahora desde el horario de OSM</span></div><div class="sy"><span class="s">█ ░</span><b>Barra de amenaza</b><span>Veinte celdas</span></div><div class="sy"><span class="s">▚</span><b>Teletipo</b><span>Separador de operaciones</span></div><div class="sy"><span class="s">●</span><b>REC</b><span>Grabación: reloj UTC de la sala</span></div><div class="sy"><span class="s">⧉</span><b>OPEN ↗</b><span>Sobre una imagen: abre la cámara o la foto original</span></div></div><div class="symg"><h3>Mapa</h3><div class="sy"><span class="s">○</span><b>Anillo rojo</b><span>Institución golpeada; el radio crece con los golpes</span></div><div class="sy"><span class="s">·</span><b>Punto blanco</b><span>Institución</span></div><div class="sy"><span class="s">■ ◇</span><b>Píxel + glifo</b><span>Operación en vuelo y su vector</span></div><div class="sy"><span class="s">⌒</span><b>Arco</b><span>Trayecto origen → objetivo</span></div><div class="sy"><span class="s">▣</span><b>Cámara</b><span>Cámara pública de tránsito</span></div><div class="sy"><span class="s">N</span><b>Nombre rojo</b><span>Nodo de origen de un arma</span></div></div><div class="symg"><h3>Menú</h3><div class="sy"><span class="s"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5l4.5-2 5 2 4.5-2v11l-4.5 2-5-2-4.5 2z"/><path d="M6.5 2.5v11M11.5 4.5v11"/></svg></span><b>Map</b><span>Vista de mapa</span></div><div class="sy"><span class="s"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="7"/><ellipse cx="9" cy="9" rx="3" ry="7"/><path d="M2 9h14M3.2 5h11.6M3.2 13h11.6"/></svg></span><b>Globe</b><span>Planeta rojo</span></div><div class="sy"><span class="s"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="4" cy="4.5" r="1.8"/><circle cx="14" cy="5" r="1.8"/><circle cx="9" cy="14" r="1.8"/><path d="M5.6 5.3l6.6.2M5 6l3.2 6.4M13.2 6.6L9.9 12.4"/></svg></span><b>Network</b><span>Grafo</span></div><div class="sy"><span class="s"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="4" height="4" transform="rotate(45 9 9)"/><path d="M5.5 5.5L2.5 2.5M12.5 12.5l3 3M3.8 7.6l3.8-3.8M10.4 14.2l3.8-3.8"/><path d="M13.5 2.5a2 2 0 0 1 2 2"/></svg></span><b>Satellite</b><span>Imagen satelital · S</span></div><div class="sy"><span class="s"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 14.5h15L13 7H5z"/><path d="M5.8 10.8h6.4M7.2 7l-1 7.5M10.8 7l1 7.5"/></svg></span><b>Tilt</b><span>Cámara oblicua · T</span></div><div class="sy"><span class="s"><svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4h2M6.5 4h9M2.5 7.3h2M6.5 7.3h9M2.5 10.6h2M6.5 10.6h9M2.5 14h2M6.5 14h9"/></svg></span><b>Master index</b><span>Catálogo completo</span></div></div></div>
+
+  </section>
+<section class="page ">
+    <header class="rh"><b>CICFA Monitor</b><span>Fuentes y ediciones</span><i>18</i></header>
+    <div class="opener"><div class="lab"><b>XVI</b></div><div class="main"><h1>Fuentes y ediciones</h1><p class="lede">Lo real de la plataforma es abierto, de solo lectura y sin claves.</p></div></div>
+  <table class="idx sm"><tbody>
+    <tr><td><b>OpenStreetMap · Nominatim</b></td><td>Dirección, horarios, operador, accesibilidad, patrimonio</td></tr>
+    <tr><td><b>Wikidata</b></td><td>Fundación, visitantes, colección, arquitecto, dirección, redes</td></tr>
+    <tr><td><b>Wikimedia Commons</b></td><td>Fotografías geolocalizadas de la calle</td></tr>
+    <tr><td><b>Esri World Imagery</b></td><td>Satélite (mapa y reconocimiento)</td></tr>
+    <tr><td><b>OpenFreeMap</b></td><td>Calles, agua, parques, edificios y nombres de la ciudad</td></tr>
+    <tr><td><b>Natural Earth</b></td><td>Costas, fronteras, tierra y países del globo</td></tr>
+    <tr><td><b>TfL · Caltrans · City of Austin · LTA</b></td><td>Cámaras de tránsito públicas (Londres, LA, SF, San Diego, Austin, Singapur)</td></tr>
+    <tr><td><b>MGRS</b></td><td>Coordenadas militares reales del centro de la vista</td></tr>
+  </tbody></table>
+  <div class="row"><div class="lab">Ediciones</div><div class="main"><p><b>Edición I</b> — terminal monoespaciada JetBrains Mono, color por vector, rayas glitch y scanlines. <b>Edición II</b> — índice editorial: Helvetica, off-black / off-white, una sola tinta de alerta.</p></div></div>
+  <figure style="margin-left:40mm"><img src="file:///Users/mymac/Developer/Cicfa world monitor/docs/manual/shots/v1-home.jpg"/><figcaption>Edición I · n333k0.github.io/cicfa-monitor</figcaption></figure>
+
+  </section></body></html>

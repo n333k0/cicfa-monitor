@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="280" viewBox="0 0 560 100">
+<title>CICFA — refined vector master</title>
+<g fill="#fff" transform="translate(0 -15)">
+<!-- C: horizontal parallel terminals with a continuous optically rounded outer bowl -->
+<path d="M159 49 H67 C50.4 49 37 62.4 37 79.5 S50.4 110 67 110 H159 V93 H67 C59.5 93 54 87.4 54 79.5 S59.5 66 67 66 H159 Z" transform="translate(0 -14)"/>
+<!-- I: optical rectangular bar -->
+<rect x="168" y="35" width="17" height="61" rx="0.6"/>
+<!-- joined C-F: second C flowing into an extended F, softened on inner radii -->
+<path d="M321 35 H220 C204.2 35 192 48.1 192 64.9 C192 82.1 204.3 96 220 96 H302 L321 76 H401 L416 61 H336 L346 51 H427 L442 35 H339 C335.5 35 331.9 36.6 329.4 39.2 L296 79 H221 C214 79 209 72.8 209 65 C209 57 214.6 51 222 51 H307 Z"/>
+<!-- A: refined smooth crown and continuous diagonal terminals -->
+<path d="M397 96 L455.5 38.7 C459.1 35.1 463.1 33.4 468.5 33.4 C474 33.4 478.1 35.1 482 39 L539 96 H516 L470.5 51.7 C469.1 50.4 467.6 50.4 466.2 51.8 L420 96 Z"/>
+</g>
+</svg>

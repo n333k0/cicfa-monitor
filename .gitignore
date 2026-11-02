@@ -27,3 +27,5 @@ node_modules/.vite/
 # local captures
 /preview-*.png
 .v2tmp
+docs/manual/shots/
+docs/manual/preview/
