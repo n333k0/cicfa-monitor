@@ -32,11 +32,10 @@ html.v2 .glitch-v, html.v2 .glitch-h, html.v2 .map-scanlines, html.v2 .map-vigne
 html.v2 .viewsel, html.v2 .ghud-controls, html.v2 .legend { display: none !important; }
 
 /* ── brand: ASCII mark + text nav (top-left) ─────────────────────────────── */
-.v2-brand { position: absolute; top: 26px; left: calc(var(--m) - 14px); z-index: 45; display: flex; align-items: flex-end; gap: 26px;
-  background: var(--panel); padding: 12px 18px 12px 14px; }
+.v2-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; flex: 0 0 auto; pointer-events: auto; }
 .ascii-logo { margin: 0; font: 700 5.6px/5.7px "JetBrains Mono", Menlo, monospace; letter-spacing: 0;
   color: var(--ink); white-space: pre; text-transform: none; user-select: none; }
-.v2-nav { display: flex; gap: 16px; padding-bottom: 6px; }
+.v2-nav { display: flex; gap: 16px; }
 .v2-nav button { font: 400 10px var(--sans); color: var(--grey); cursor: pointer; background: none; border: 0; padding: 0; }
 .v2-nav button:hover, .v2-nav button.on { color: var(--ink); }
 .v2-nav button.on { font-weight: 700; }
@@ -53,7 +52,7 @@ html.v2 .viewsel, html.v2 .ghud-controls, html.v2 .legend { display: none !impor
 html.v2 .crit { color: var(--crimson); }
 
 /* ── columns: flat panels, Tomb margins ─────────────────────────────────── */
-html.v2 .col-l { top: 168px; left: var(--m); width: 270px; bottom: 96px; gap: 22px;
+html.v2 .col-l { top: 40px; left: var(--m); width: 270px; bottom: 96px; gap: 22px;
   background: var(--panel); padding: 14px 16px; pointer-events: auto; }
 html.v2 .col-r { top: 268px; right: 120px; width: 280px; bottom: 96px; gap: 22px;
   background: var(--panel); padding: 14px 16px; pointer-events: auto; }

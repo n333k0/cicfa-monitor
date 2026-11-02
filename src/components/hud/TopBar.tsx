@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { useEngine } from '../../sim/useEngine';
 import { fmtInt, fmtTime } from '../../sim/format';
 import { INSTITUTIONS } from '../../data/institutions';
-import { engine } from '../../sim/engine';
 import { V2 } from '../../theme';
-import AsciiLogo from '../v2/AsciiLogo';
 
 export default function TopBar() {
   const snap = useEngine();
@@ -14,16 +12,9 @@ export default function TopBar() {
   const liveAgents = snap.agents.filter((a) => a.status === 'live' || a.status === 'degraded').length;
 
   if (V2) {
-    // Tomb layout: ASCII mark + small text nav top-left; spec block (bold label / regular value) top-right
-    const views: [string, 'flat' | 'globe' | 'ontology'][] = [['Map', 'flat'], ['Globe', 'globe'], ['Network', 'ontology']];
+    // Tomb layout: spec block (bold label / regular value) top-right; the ASCII mark + nav live in the left column (v2/Brand)
     return (
       <>
-        <div className="v2-brand">
-          <AsciiLogo />
-          <nav className="v2-nav">
-            {views.map(([l, m]) => <button key={m} className={`clk-u ${snap.viewMode === m ? 'on' : ''}`} onClick={() => engine.setViewMode(m)}>{l}</button>)}
-          </nav>
-        </div>
         <div className="v2-spec">
           <div className="v2-spec-h"><b>CICFA<br />DWG-01</b><span className="v2-clock">{fmtTime(wall)} UTC<br /><i>SIM {snap.running ? 'RUN' : 'HOLD'} ×{snap.speed}</i></span></div>
           <dl>
