@@ -11,26 +11,7 @@ export default function TopBar() {
   const s = snap.stats;
   const liveAgents = snap.agents.filter((a) => a.status === 'live' || a.status === 'degraded').length;
 
-  if (V2) {
-    // Tomb layout: spec block (bold label / regular value) top-right; the ASCII mark + nav live in the left column (v2/Brand)
-    return (
-      <>
-        <div className="v2-spec">
-          <div className="v2-spec-h"><b>CICFA<br />DWG-01</b><span className="v2-clock">{fmtTime(wall)} UTC<br /><i>SIM {snap.running ? 'RUN' : 'HOLD'} ×{snap.speed}</i></span></div>
-          <dl>
-            <dt>Institutions</dt><dd>{fmtInt(INSTITUTIONS.length)}</dd>
-            <dt>Operations live</dt><dd>{liveAgents} / {snap.agents.length}</dd>
-            <dt>In flight</dt><dd>{s.active}</dd>
-            <dt>Events logged</dt><dd>{fmtInt(s.total)}</dd>
-            <dt>Ops per minute</dt><dd>{s.perMin}</dd>
-            <dt>Breaches</dt><dd className="crit">{s.byOutcome.breach}</dd>
-            <dt>Blocked</dt><dd>{s.byOutcome.blocked}</dd>
-            <dt>Sim clock</dt><dd>{fmtTime(snap.clock)}</dd>
-          </dl>
-        </div>
-      </>
-    );
-  }
+  if (V2) return null;   // v2: the spec block lives inside the right column (v2/Spec)
 
   return (
     <div className="topbar">

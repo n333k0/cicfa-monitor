@@ -1,25 +1,15 @@
 // v2 MASTER INDEX — every institution as a numbered catalogue, laid out like the artist's
 // reference spread ("Tomb Index / Master Index": number · roman · NAME · category).
 // Two pages of 89 rows per spread; ◂ ▸ / arrow keys turn spreads; click a name to open its
-// Target Profile. Opened from the vertical tab on the left edge or the rail.
+// Target Profile. Opened from the icon rail.
 import { useEffect, useMemo, useState } from 'react';
 import { INSTITUTIONS } from '../../data/institutions';
 import { engine } from '../../sim/engine';
 import { useEngine } from '../../sim/useEngine';
 import { roman } from './roman';
-import { IconEject } from './icons';
 
 const PER_PAGE = 89;
 const ORDER = [...INSTITUTIONS].sort((a, b) => b.prominence - a.prominence || a.name.localeCompare(b.name));
-
-export function IndexTab({ onOpen }: { onOpen: () => void }) {
-  return (
-    <button className="index-tab" onClick={onOpen} aria-label="Open master index">
-      <IconEject />
-      <span>Open Master Index</span>
-    </button>
-  );
-}
 
 export default function MasterIndex({ open, onClose }: { open: boolean; onClose: () => void }) {
   const snap = useEngine();

@@ -13,7 +13,7 @@ await p.screenshot({ path: '/tmp/v2-rail.png', clip: { x: 1400, y: 40, width: 28
 await p.evaluate(() => window.CICFA.select('malba')); await p.waitForTimeout(9000);
 await p.screenshot({ path: '/tmp/v2-profile.png', timeout: 90000 });
 await p.evaluate(() => window.CICFA.select(null)); await p.waitForTimeout(500);
-await p.click('.index-tab'); await p.waitForTimeout(800);
+await p.click('.rail-btn[aria-label="Master index"]'); await p.waitForTimeout(800);
 await p.screenshot({ path: '/tmp/v2-index.png', timeout: 90000 });
 await p.keyboard.press('Escape');
 await p.click('.rail-btn:nth-child(2)'); await p.waitForTimeout(5000);

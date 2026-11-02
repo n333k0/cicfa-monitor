@@ -17,7 +17,8 @@ import { engine } from './sim/engine';
 import { V2 } from './theme';
 import IconRail from './components/v2/IconRail';
 import Brand from './components/v2/Brand';
-import MasterIndex, { IndexTab } from './components/v2/MasterIndex';
+import Spec from './components/v2/Spec';
+import MasterIndex from './components/v2/MasterIndex';
 import { useEngine } from './sim/useEngine';
 import { installGlobalBridge, attachPostMessageBridge } from './sim/connectors';
 
@@ -41,7 +42,6 @@ export default function App() {
       <TopBar />
       {!V2 && <ViewSelector />}
       {V2 && <IconRail onIndex={() => setIndexOpen(true)} />}
-      {V2 && <IndexTab onOpen={() => setIndexOpen(true)} />}
       <div className="col-l">
         {V2 && <Brand />}
         <AgentPanel />
@@ -49,6 +49,7 @@ export default function App() {
         <Filters />
       </div>
       <div className="col-r">
+        {V2 && <Spec />}
         <StatsPanel />
         <EventFeed />
       </div>

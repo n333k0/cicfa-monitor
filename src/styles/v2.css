@@ -41,7 +41,7 @@ html.v2 .viewsel, html.v2 .ghud-controls, html.v2 .legend { display: none !impor
 .v2-nav button.on { font-weight: 700; }
 
 /* ── spec block (top-right): bold label · regular value ─────────────────── */
-.v2-spec { position: absolute; top: 40px; right: 120px; width: 280px; z-index: 40; }
+.v2-spec { flex: 0 0 auto; pointer-events: auto; }
 .v2-spec-h { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
 .v2-spec-h b { font-size: 12px; font-weight: 700; line-height: 1.35; }
 .v2-clock { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
@@ -49,12 +49,15 @@ html.v2 .viewsel, html.v2 .ghud-controls, html.v2 .legend { display: none !impor
 .v2-spec dl, .pf2-spec { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 4px 10px; margin: 0; }
 .v2-spec dt, .pf2-spec dt { font-weight: 700; }
 .v2-spec dd, .pf2-spec dd { margin: 0; font-variant-numeric: tabular-nums; }
+.v2-spec dd { text-align: right; }   /* same right edge as the telemetry + event stream values */
+html.v2 .col-r .tiles, html.v2 .col-r .hair { display: none; }   /* totals now live in the spec block above */
+html.v2 .col-r .vrow + .vrow, html.v2 .col-r .mini { margin-top: 0; }
 html.v2 .crit { color: var(--crimson); }
 
 /* ── columns: flat panels, Tomb margins ─────────────────────────────────── */
 html.v2 .col-l { top: 40px; left: var(--m); width: 270px; bottom: 96px; gap: 22px;
   background: var(--panel); padding: 14px 16px; pointer-events: auto; }
-html.v2 .col-r { top: 268px; right: 120px; width: 280px; bottom: 96px; gap: 22px;
+html.v2 .col-r { top: 40px; right: 120px; width: 280px; bottom: 96px; gap: 22px;
   background: var(--panel); padding: 14px 16px; pointer-events: auto; }
 html.v2 .panel-h { font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0;
   display: flex; justify-content: space-between; align-items: baseline; }
@@ -132,14 +135,6 @@ html.v2 .map-tooltip { color: var(--ink); font-size: 10px; }
 .rail-tip::before { content: '▸ '; }
 .rail-btn:hover .rail-tip { opacity: 1; transform: translate(0, -50%); }
 .rail-sep { width: 12px; height: 1px; background: var(--grey); }
-
-/* ── left edge tab ──────────────────────────────────────────────────────── */
-.index-tab { position: absolute; left: 0; top: 210px; height: 490px; width: 35px; z-index: 46;
-  display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 16px;
-  background: var(--bg); border: 1px solid rgba(236, 233, 226, 0.35); border-left: 0; border-radius: 0 4px 4px 0;
-  color: var(--ink); cursor: pointer; font: 400 10px var(--sans); }
-.index-tab span { writing-mode: vertical-rl; text-transform: uppercase; letter-spacing: 0.5px; }
-.index-tab:hover { border-color: var(--ink); }
 
 /* ── target profile ─────────────────────────────────────────────────────── */
 html.v2 .profile { top: 168px; left: 380px; width: 430px; bottom: 96px;
