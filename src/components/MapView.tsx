@@ -17,7 +17,7 @@ import { PICK_RADIUS, IS_PHONE } from '../sim/touch';
 import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
-import { cityLayer } from './cityLayer';
+import { cityLayer, type CityLabel } from './cityLayer';
 import MapHud from './MapHud';
 import { camsInView, camStamp, type Cam } from '../sim/recon';
 import { nearest } from '../sim/intel';
@@ -136,7 +136,7 @@ export default function MapView() {
   const qstep = (360 / (512 * 2 ** zq)) * 40;                 // re-place labels every ~40px of panning
   const lonq = Math.round(vs.longitude / qstep) * qstep, latq = Math.round(vs.latitude / qstep) * qstep;
   const labels = useMemo(() => {
-    if (zq < 3.2) return sel ? insts.filter((d) => d.id === sel).map((d) => ({ ...d, dy: 0 })) : [];
+    if (zq < 3.2) return sel ? insts.filter((d) => d.id === sel).map((d) => ({ ...d, dy: 0, flip: false })) : [];
     const W = window.innerWidth, H = window.innerHeight;
     const vp = new WebMercatorViewport({ width: W, height: H, longitude: lonq, latitude: latq, zoom: zq });
     const all = zq >= 4.6;
@@ -146,15 +146,19 @@ export default function MapView() {
     // close to a city, crowded names are stacked (nudged up/down) instead of hidden
     const tries = zq >= 9 ? [0, 13, -13, 26, -26, 39, -39, 52, -52, 65, -65] : [0];
     const placed: [number, number, number, number][] = [];
-    const out: (typeof insts[number] & { dy: number })[] = [];
+    const out: (typeof insts[number] & { dy: number; flip: boolean })[] = [];
+    // names that would run off the right edge (or under the right column) are written to the LEFT of the dot
+    const rightLimit = W > 900 ? W - 400 : W - 8;
     for (const d of cand) {
       const dl = ((d.lon - lonq + 540) % 360) - 180;          // nearest world copy
       const [x, y] = vp.project([lonq + dl, d.lat]);
       if (x < -20 || x > W + 20 || y < -10 || y > H + 10) continue;
+      const w = d.name.length * 6.8;
+      const flip = x + 8 + w > rightLimit && x - 8 - w > 0;
       for (const dy of tries) {
-        const box: [number, number, number, number] = [x + 3, y + dy - 7, x + 8 + d.name.length * 6.8, y + dy + 7];
+        const box: [number, number, number, number] = flip ? [x - 8 - w, y + dy - 7, x - 3, y + dy + 7] : [x + 3, y + dy - 7, x + 8 + w, y + dy + 7];
         if (placed.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
-        placed.push(box); out.push({ ...d, dy });
+        placed.push(box); out.push({ ...d, dy, flip });
         break;
       }
       if (out.length >= 300) break;
@@ -185,7 +189,12 @@ export default function MapView() {
   const worldFade = Math.max(0, Math.min(1, (10 - vs.zoom) / 2.5));   // crude world outlines give way to real streets
   // city tiles: rebuild the layer only when its zoom bucket / opacity step / satellite flag changes
   const cityZ = Math.round(vs.zoom * 8) / 8;
-  const city = useMemo(() => cityLayer(cityZ, sat), [cityZ, sat]);
+  const [cityLabels, setCityLabels] = useState<CityLabel[]>([]);
+  const city = useMemo(() => cityLayer(cityZ, sat, setCityLabels), [cityZ, sat]);
+  const cityOpacity = Math.min(1, Math.max(0, (vs.zoom - 4) / 1.5));
+  const zb = Math.floor(vs.zoom * 2) / 2;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const shownCity = useMemo(() => (vs.zoom < 4 ? [] : cityLabels.filter((l) => zb >= l.minZoom)), [cityLabels, zb]);
   const layers = [
     // REAL god's-eye overhead imagery (Esri World Imagery, no key) — desaturated + cool-tinted to sit under the monitor's lines
     sat ? new TileLayer({
@@ -202,6 +211,19 @@ export default function MapView() {
       },
     }) : null,
     city,
+    new TextLayer({
+      id: 'city-places', data: shownCity.filter((l) => l.kind === 'place'), opacity: cityOpacity,
+      getPosition: (l: CityLabel) => l.pos, getText: (l: CityLabel) => l.text,
+      getSize: (l: CityLabel) => (l.cls === 'city' ? 11 : 10), sizeUnits: 'pixels',
+      getColor: (l: CityLabel) => (l.cls === 'city' || l.cls === 'town' ? [235, 238, 245, 210] : [170, 178, 196, 160]),
+      fontFamily: MAP_FONT, characterSet: 'auto', getTextAnchor: 'middle', getAlignmentBaseline: 'center',
+    }),
+    new TextLayer({
+      id: 'city-streets', data: shownCity.filter((l) => l.kind === 'street'), opacity: cityOpacity,
+      getPosition: (l: CityLabel) => l.pos, getText: (l: CityLabel) => l.text, getAngle: (l: CityLabel) => l.angle,
+      getSize: 9, sizeUnits: 'pixels', getColor: [150, 158, 178, 150],
+      fontFamily: MAP_FONT, characterSet: 'auto', getTextAnchor: 'middle', getAlignmentBaseline: 'center',
+    }),
     new GeoJsonLayer({ id: 'graticule', opacity: worldFade, visible: worldFade > 0, data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'borders', opacity: worldFade, visible: worldFade > 0, data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'coast', opacity: worldFade, visible: worldFade > 0, data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
@@ -235,8 +257,8 @@ export default function MapView() {
       getText: (d: typeof insts[number]) => d.name.toUpperCase(),
       getSize: 11, sizeUnits: 'pixels',
       getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : (hits[d.id] ?? 0) > 0 ? [235, 238, 245, 225] : [160, 168, 184, 150]),
-      fontFamily: MAP_FONT, getTextAnchor: 'start', getAlignmentBaseline: 'center',
-      getPixelOffset: (d: { dy: number }) => [6, d.dy], characterSet: 'auto',
+      fontFamily: MAP_FONT, getTextAnchor: (d: { flip: boolean }) => (d.flip ? 'end' : 'start'), getAlignmentBaseline: 'center',
+      getPixelOffset: (d: { dy: number; flip: boolean }) => [d.flip ? -6 : 6, d.dy], characterSet: 'auto',
       updateTriggers: { getColor: [sel, snap.version] },
     }),
     new LineLayer({
