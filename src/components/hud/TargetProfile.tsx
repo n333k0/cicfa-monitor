@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { engine } from '../../sim/engine';
 import { INSTITUTION_INDEX } from '../../data/institutions';
 import { AGENT_INDEX } from '../../data/agents';
 import { VECTORS } from '../../data/vectors';
 import { useEngine } from '../../sim/useEngine';
 import { fmtBytes, fmtTime, rgba } from '../../sim/format';
-import { assetStates, deadline, leakSample, nearest, osmLink, scramble, threat, wikiLink } from '../../sim/intel';
+import { assetStates, deadline, leakSample, nearest, scramble, threat, wikiLink } from '../../sim/intel';
+import { loadOsm, osmLink, type OsmState } from '../../sim/osm';
 
 // TARGET PROFILE — the full surveillance dossier that opens when an institution is clicked.
 // Real: name, place, coordinates, public links. Simulated: everything about the attack.
@@ -15,6 +16,14 @@ export default function TargetProfile() {
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 1000); return () => clearInterval(t); }, []);
   const links = useMemo(() => (inst ? nearest(inst, 6) : []), [inst]);
+  const [osm, setOsm] = useState<OsmState>({ status: 'loading' });
+  useEffect(() => {
+    if (!inst) return;
+    let alive = true;
+    setOsm({ status: 'loading' });
+    loadOsm(inst).then((s) => { if (alive) setOsm(s); });
+    return () => { alive = false; };
+  }, [inst]);
   if (!inst) return null;
 
   const hist = engine.historyFor(inst.id);
@@ -43,7 +52,37 @@ export default function TargetProfile() {
       <div className="mini">{inst.kind} · {inst.city} · {inst.country}{inst.scene ? ` · ${inst.scene}` : ''}</div>
       <div className="mini">{inst.lat.toFixed(4)}, {inst.lon.toFixed(4)}{approx ? ' · ±APPROX' : ''} · PROMINENCE {'◆'.repeat(inst.prominence)}{'◇'.repeat(5 - inst.prominence)}</div>
 
+      <div className="pf-sec pf-realblock">
+        <div className="pf-h real">Open source intelligence <span className="tag">// REAL · OpenStreetMap</span></div>
+        {osm.status === 'loading' && <div className="mini">querying open sources…</div>}
+        {osm.status === 'error' && <div className="mini">open source unreachable ({osm.message})</div>}
+        {osm.status === 'none' && <div className="mini">no matching record in OpenStreetMap</div>}
+        {osm.status === 'ok' && (() => {
+          const d = osm.data;
+          const rows: [string, ReactNode][] = [];
+          if (d.openNow) rows.push(['Status now', <b className={d.openNow === 'OPEN' ? 'open' : 'shut'}>{d.openNow === 'OPEN' ? '● OPEN NOW' : '○ CLOSED NOW'}</b>]);
+          if (d.openingHours) rows.push(['Hours', <b style={{ whiteSpace: 'normal', textAlign: 'right' }}>{d.openingHours}</b>]);
+          if (d.address) rows.push(['Address', <b style={{ whiteSpace: 'normal', textAlign: 'right' }}>{d.address}</b>]);
+          if (d.operator) rows.push(['Operator', <b style={{ whiteSpace: 'normal', textAlign: 'right' }}>{d.operator}</b>]);
+          if (d.startDate) rows.push(['Established', <b>{d.startDate}</b>]);
+          if (d.wheelchair) rows.push(['Accessibility', <b>{d.wheelchair === 'yes' ? 'WHEELCHAIR ✓' : d.wheelchair.toUpperCase()}</b>]);
+          if (d.fee) rows.push(['Entry', <b>{d.fee === 'yes' ? 'TICKETED' : d.fee === 'no' ? 'FREE' : d.fee.toUpperCase()}</b>]);
+          if (d.heritage) rows.push(['Listing', <b>PROTECTED HERITAGE</b>]);
+          if (d.phone) rows.push(['Phone', <b>{d.phone}</b>]);
+          return (<>
+            {rows.map(([k, v], i) => <div key={i} className="pf-row real"><span>{k}</span>{v}</div>)}
+            {d.description && <div className="pf-text real-text">{d.description}</div>}
+            <div className="pf-row real"><span>Links</span><span style={{ textAlign: 'right', whiteSpace: 'normal' }}>
+              {d.website && <a href={d.website} target="_blank" rel="noreferrer">SITE ↗ </a>}
+              {d.wikidata && <a href={`https://www.wikidata.org/wiki/${d.wikidata}`} target="_blank" rel="noreferrer">WIKIDATA ↗ </a>}
+              <a href={osmLink(inst)} target="_blank" rel="noreferrer">OSM ↗</a>
+            </span></div>
+          </>);
+        })()}
+      </div>
+
       <div className="pf-sec">
+        <div className="pf-h">Simulated operation <span className="tag">// THEATRE · SIM</span></div>
         <div className="pf-row"><span>Threat level</span><b className={`lv${th.lvl}`}>{th.level}</b></div>
         <div className={`pf-bar lv${th.lvl}`}>{th.bar}</div>
         <div className="pf-row"><span>Status</span><b className={live.length ? 'lv4' : ''}>{status}</b></div>

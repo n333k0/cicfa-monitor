@@ -268,3 +268,14 @@ body {
 .profile .lv0, .profile .lv1 { color: var(--ink); } .profile .lv2 { color: var(--magenta); }
 .profile .lv3, .profile .lv4 { color: var(--crimson); }
 .profile .mag { color: var(--magenta); } .profile .dim { color: var(--ink-faint); }
+/* REAL vs SIM: open-source intelligence is REAL (white, left hairline), the attack dossier is THEATRE (crimson tags) */
+.pf-realblock { border-left: 1px solid rgba(235,238,245,0.35); padding-left: 9px; margin-left: -9px; }
+.pf-h.real { color: var(--ink); }
+.pf-h.real .tag { color: rgba(235,238,245,0.5); }
+.pf-row.real { align-items: baseline; }
+.pf-row.real > span:first-child { color: var(--ink-faint); flex: 0 0 auto; white-space: nowrap; overflow: visible; text-overflow: clip; }
+.pf-row.real b, .pf-row.real a { color: var(--ink); }
+.pf-row.real a:hover { color: #7fd1a0; }
+.pf-row.real b.open { color: #7fd1a0; }
+.pf-row.real b.shut { color: var(--ink-faint); }
+.real-text { color: var(--ink-dim); margin-top: 6px; font-size: 10px; line-height: 1.5; }
