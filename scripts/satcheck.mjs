@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 1680, height: 945 } });
+const errs = [];
+p.on('pageerror', e => errs.push(e.message));
+p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+await p.goto('http://localhost:4173', { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(4000);
+await p.evaluate(() => window.CICFA_sat(true));
+await p.evaluate(() => window.CICFA_view(-58.402, -34.577, 15));
+await p.waitForTimeout(9000);
+await p.screenshot({ path: '/tmp/sat-ba.png', timeout: 90000 });
+console.log('ERRORS', errs.length); for (const e of errs.slice(0,6)) console.log(' •', e.slice(0,160));
+await b.close();

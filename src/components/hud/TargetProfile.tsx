@@ -7,6 +7,7 @@ import { useEngine } from '../../sim/useEngine';
 import { fmtBytes, fmtTime, rgba } from '../../sim/format';
 import { assetStates, deadline, leakSample, nearest, scramble, threat, wikiLink } from '../../sim/intel';
 import { loadOsm, osmLink, type OsmState } from '../../sim/osm';
+import { esriPatch, nearestCam, camStamp, type Cam } from '../../sim/recon';
 
 // TARGET PROFILE — the full surveillance dossier that opens when an institution is clicked.
 // Real: name, place, coordinates, public links. Simulated: everything about the attack.
@@ -22,6 +23,14 @@ export default function TargetProfile() {
     let alive = true;
     setOsm({ status: 'loading' });
     loadOsm(inst).then((s) => { if (alive) setOsm(s); });
+    return () => { alive = false; };
+  }, [inst]);
+  const [cam, setCam] = useState<{ cam: Cam; km: number } | null | undefined>(undefined);
+  useEffect(() => {
+    if (!inst) return;
+    let alive = true;
+    setCam(undefined);
+    nearestCam(inst.lat, inst.lon).then((c) => { if (alive) setCam(c); }).catch(() => { if (alive) setCam(null); });
     return () => { alive = false; };
   }, [inst]);
   if (!inst) return null;
@@ -79,6 +88,28 @@ export default function TargetProfile() {
             </span></div>
           </>);
         })()}
+      </div>
+
+      <div className="pf-sec pf-realblock">
+        <div className="pf-h real">Reconnaissance <span className="tag">// REAL · overhead + public CCTV</span></div>
+        <div className="recon-frame">
+          <img className="recon-img sat" src={esriPatch(inst.lat, inst.lon)} alt="" draggable={false}
+            onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
+          <div className="recon-reticle" />
+          <div className="recon-tag tl">SAT · ESRI WORLD IMAGERY</div>
+          <div className="recon-tag br">{inst.lat.toFixed(4)} {inst.lon.toFixed(4)}</div>
+        </div>
+        {cam && (
+          <div className="recon-frame" style={{ marginTop: 6 }}>
+            <img className="recon-img cam" src={`${cam.cam.url}?t=${camStamp()}`} alt="" draggable={false}
+              onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
+            <div className="recon-reticle thermal" />
+            <div className="recon-tag tl">CCTV · {cam.cam.source}</div>
+            <div className="recon-tag br">{Math.round(cam.km * 1000)} M · LIVE</div>
+            <div className="recon-cap">{cam.cam.name}</div>
+          </div>
+        )}
+        {cam === null && <div className="mini">no public street camera within range · satellite only</div>}
       </div>
 
       <div className="pf-sec">

@@ -83,16 +83,18 @@ const fillColor = (f: Feat): RGBA => {
   if (L === 'park') return [14, 26, 20, 140];      // parks, faint green-black
   return [0, 0, 0, 0];
 };
+// over satellite imagery the opaque fills would hide it — keep only the thin lines + labels
+const fillColorSat = (): RGBA => [0, 0, 0, 0];
 
-/** zoom = current map zoom. Returns null below city range. */
-export function cityLayer(zoom: number) {
+/** zoom = current map zoom; satellite = overhead imagery is on (drop opaque fills). Returns null below city range. */
+export function cityLayer(zoom: number, satellite = false) {
   if (zoom < 4) return null;
   const zb = Math.floor(zoom * 2) / 2;                       // zoom bucket (re-filter only every half step)
   const opacity = Math.min(1, (zoom - 4) / 1.5);
   return new MVTLayer({
     id: 'city', data: TILEJSON, binary: false, minZoom: 4, maxZoom: 14, opacity,
     loadOptions: { mvt: { layers: ['landuse', 'water', 'waterway', 'park', 'transportation', 'transportation_name', 'place', 'building', 'boundary'] } },
-    updateTriggers: { renderSubLayers: [zb] },
+    updateTriggers: { renderSubLayers: [zb, satellite] },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderSubLayers: (props: any) => {
       if (!props.data || !Array.isArray(props.data)) return null;
@@ -104,7 +106,7 @@ export function cityLayer(zoom: number) {
           ...base, id: `${props.id}-geo`, data: p.geo,
           stroked: true, filled: true, pointType: 'circle', getPointRadius: 0,
           lineWidthUnits: 'pixels', getLineWidth: lineWidth, lineWidthMinPixels: 0.4,
-          getLineColor: lineColor, getFillColor: fillColor,
+          getLineColor: lineColor, getFillColor: satellite ? fillColorSat : fillColor,
         } as any),
         new TextLayer({
           ...base, id: `${props.id}-places`, data: p.places,

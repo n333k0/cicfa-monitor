@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import { MapView as DeckMapView, FlyToInterpolator, WebMercatorViewport } from '@deck.gl/core';
-import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer, LineLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer, LineLayer, BitmapLayer } from '@deck.gl/layers';
+import { TileLayer } from '@deck.gl/geo-layers';
 import type { PickingInfo } from '@deck.gl/core';
 
 
@@ -39,6 +40,15 @@ export default function MapView() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [vs, setVs] = useState<any>(() => ({ longitude: -16, latitude: -6, zoom: Math.max(1, Math.log2((window.innerWidth * 0.64) / 512)), pitch: 0, bearing: 0 }));
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
+  // REAL overhead imagery (Esri World Imagery, keyless) as a god's-eye basemap, toggled on
+  const [sat, setSat] = useState(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if ((e.key === 's' || e.key === 'S') && !e.metaKey && !e.ctrlKey) setSat((v) => !v); };
+    window.addEventListener('keydown', onKey);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).CICFA_sat = (on?: boolean) => setSat((v) => (on === undefined ? !v : !!on));
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   useEffect(() => {
     const t = engine.consumeFlyTarget();
@@ -105,7 +115,21 @@ export default function MapView() {
 
   const worldFade = Math.max(0, Math.min(1, (10 - vs.zoom) / 2.5));   // crude world outlines give way to real streets
   const layers = [
-    cityLayer(vs.zoom),
+    // REAL god's-eye overhead imagery (Esri World Imagery, no key) — desaturated + cool-tinted to sit under the monitor's lines
+    sat ? new TileLayer({
+      id: 'sat', data: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      minZoom: 0, maxZoom: 19, tileSize: 256,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      renderSubLayers: (props: any) => {
+        const { boundingBox } = props.tile;
+        return new BitmapLayer(props, {
+          data: undefined, image: props.data,
+          bounds: [boundingBox[0][0], boundingBox[0][1], boundingBox[1][0], boundingBox[1][1]],
+          desaturate: 0.65, tintColor: [188, 200, 216], opacity: 0.92,
+        });
+      },
+    }) : null,
+    cityLayer(vs.zoom, sat),
     new GeoJsonLayer({ id: 'graticule', opacity: worldFade, visible: worldFade > 0, data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'borders', opacity: worldFade, visible: worldFade > 0, data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'coast', opacity: worldFade, visible: worldFade > 0, data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
@@ -200,6 +224,9 @@ export default function MapView() {
         controller
         layers={layers}
       />
+      <button className={`map-sat ${sat ? 'on' : ''}`} onClick={() => setSat((v) => !v)} title="Overhead imagery (S)">
+        ◹ SAT <span>{sat ? 'ON' : 'OFF'}</span>
+      </button>
       {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}</div>}
       <div className="map-shade" />
       <div className="map-grain" />

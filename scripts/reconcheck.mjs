@@ -1,0 +1,20 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 1680, height: 945 } });
+const errs = [];
+p.on('pageerror', e => errs.push(e.message));
+p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+await p.goto(process.env.URL || 'http://localhost:4173', { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(4000);
+await p.evaluate(id => window.CICFA.select(id), process.env.ID || 'malba');
+await p.waitForTimeout(+(process.env.WAIT || 9000));
+const info = await p.evaluate(() => {
+  const imgs = [...document.querySelectorAll('.recon-img')].map(i => ({ cls: i.className, w: i.naturalWidth, h: i.naturalHeight, shown: i.style.display !== 'none' }));
+  const caps = [...document.querySelectorAll('.pf-realblock .pf-h, .recon-cap, .recon-tag, .mini')].map(e => e.textContent.replace(/\s+/g,' ').trim()).filter(Boolean);
+  return { imgs, caps };
+});
+console.log('IMGS:', JSON.stringify(info.imgs));
+console.log('CAPS:', info.caps.slice(0,12).join(' | '));
+await p.screenshot({ path: process.env.SHOT || 'preview-recon.png', timeout: 90000 });
+console.log('ERRORS', errs.length); for (const e of errs.slice(0,6)) console.log(' •', e.slice(0,160));
+await b.close();
