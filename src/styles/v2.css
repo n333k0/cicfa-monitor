@@ -198,30 +198,36 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
 /* ═══ v2 on phones + portrait tablets (≤ 900px): full-screen map, logo + icon row on top, four collapsible
    bottom tabs (LAB · TARGETS · TELEMETRY · STREAM) that slide the panels up as a sheet.
    Desktop never shows .mhead / .mtabs. ════════════════════════════════════════════ */
-.mhead, .mtabs { display: none; }
+.mhead, .mtabs, .pf-grip { display: none; }
 @media (max-width: 900px) {
-  html.v2 { --mh: 60px; --mt: calc(50px + env(safe-area-inset-bottom)); }
-  html.v2 .mhead { display: flex; align-items: center; position: fixed; top: 0; left: 0; right: 0; height: var(--mh);
-    padding: 0 16px; z-index: 70; background: var(--panel); }
-  html.v2 .mhead .ascii-logo { font-size: 2.9px; line-height: 3px; }
-  /* icon menu → top-right row inside the header */
-  html.v2 .irail { top: 0; bottom: auto; left: auto; right: 12px; height: var(--mh); transform: none; z-index: 71; gap: 10px; }
-  html.v2 .rail-btn { width: 26px; height: 26px; opacity: 0.55; }
-  html.v2 .rail-sep, html.v2 .rail-tip { display: none; }
-  /* bottom tabs */
-  html.v2 .mtabs { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0;
-    height: var(--mt); padding-bottom: env(safe-area-inset-bottom); z-index: 70; background: var(--bg); border-top: 1px solid #222; }
-  html.v2 .mtabs button { background: none; border: 0; color: var(--grey); font: 700 10px var(--sans); text-transform: uppercase;
-    display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  /* logo spans the full width inside a 16px margin: 68 columns × 0.6em advance */
+  html.v2 { --lf: calc((100vw - 32px) / 40.8); --lh: calc(var(--lf) * 1.02);
+    --mh: calc(18px + var(--lh) * 18); --tt: 34px; --top: calc(var(--mh) + var(--tt));
+    --mt: calc(56px + env(safe-area-inset-bottom)); }
+  /* full-width ASCII logo, no bar, floating over everything (doesn't block the map) */
+  html.v2 .mhead { display: block; position: fixed; top: 0; left: 0; right: 0; padding: 14px 16px 0; z-index: 72;
+    background: none; pointer-events: none; }
+  html.v2 .mhead .ascii-logo { font-size: var(--lf); line-height: var(--lh); text-shadow: 0 0 6px var(--bg); }
+  /* panel tabs right under the logo — transparent */
+  html.v2 .mtabs { display: flex; justify-content: space-between; position: fixed; top: var(--mh); left: 0; right: 0;
+    height: var(--tt); padding: 0 16px; z-index: 71; background: none; }
+  html.v2 .mtabs button { background: none; border: 0; padding: 0; color: var(--ink); opacity: 0.55; font: 700 10.5px var(--sans);
+    text-transform: uppercase; display: flex; align-items: center; gap: 5px; cursor: pointer; text-shadow: 0 0 6px var(--bg);
+    -webkit-tap-highlight-color: transparent; }
   html.v2 .mtabs button i { font-style: normal; font-size: 8px; }
-  html.v2 .mtabs button.on { color: var(--ink); background: var(--panel); }
+  html.v2 .mtabs button.on { opacity: 1; }
+  /* icon menu → evenly spaced along the very bottom, no bar */
+  html.v2 .irail { top: auto; bottom: 0; left: 0; right: 0; height: var(--mt); padding: 0 16px env(safe-area-inset-bottom);
+    transform: none; justify-content: space-between; gap: 0; z-index: 71; background: none; }
+  html.v2 .rail-btn { width: 32px; height: 32px; opacity: 0.6; filter: drop-shadow(0 0 4px var(--bg)); }
+  html.v2 .rail-sep, html.v2 .rail-tip { display: none; }
   /* things that don't fit a phone */
   html.v2 .rawstream, html.v2 .ghud, html.v2 .dock, html.v2 .col-l .v2-brand, html.v2 .map-tooltip, html.v2 .cam-card { display: none !important; }
   /* columns collapse; the open tab slides its panels up as a sheet above the tab bar */
-  html.v2 .col-l, html.v2 .col-r { display: none; position: fixed; top: auto; left: 0; right: 0; bottom: var(--mt); width: auto;
-    max-height: 62vh; overflow-y: auto; padding: 16px 18px 20px; gap: 20px; z-index: 65; border-top: 1px solid #222;
+  html.v2 .col-l, html.v2 .col-r { display: none; position: fixed; top: var(--top); left: 0; right: 0; bottom: auto; width: auto;
+    max-height: calc(100vh - var(--top) - var(--mt) - 8px); overflow-y: auto; padding: 14px 16px 20px; gap: 20px; z-index: 65;
     -webkit-overflow-scrolling: touch; animation: msheet 0.18s ease-out; }
-  @keyframes msheet { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes msheet { from { transform: translateY(-16px); opacity: 0; } to { transform: none; opacity: 1; } }
   html.v2 .shell.mt-lab .col-l, html.v2 .shell.mt-targets .col-l,
   html.v2 .shell.mt-telemetry .col-r, html.v2 .shell.mt-stream .col-r { display: flex; }
   html.v2 .col-l .grow, html.v2 .col-r .grow { flex: none; }
@@ -232,14 +238,19 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   /* TELEMETRY = spec + vectors · STREAM = event stream */
   html.v2 .shell.mt-telemetry .col-r > .panel.grow { display: none; }
   html.v2 .shell.mt-stream .col-r > .v2-spec, html.v2 .shell.mt-stream .col-r > .panel:not(.grow) { display: none; }
-  html.v2 .shell.mt-stream .feed { height: 48vh; }
+  html.v2 .shell.mt-stream .feed { height: 44vh; }
   /* bigger touch rows */
   html.v2 .agent { padding: 5px 0; } html.v2 .detail .row { padding: 6px 0 !important; }
   html.v2 .vrow { padding: 4px 0; } html.v2 .ev { padding: 3px 0; }
   html.v2 .chips { gap: 10px 18px; } html.v2 .chip { padding: 4px 0; }
-  /* target profile = full screen between header and tabs */
-  html.v2 .profile { position: fixed; top: var(--mh); bottom: var(--mt); left: 0; right: 0; width: auto; z-index: 66;
-    padding: 18px 18px 24px 30px; }
+  /* target profile = bottom sheet: the map above stays visible + tappable; grip expands it to full height */
+  html.v2 .profile { position: fixed; top: auto; height: 46vh; bottom: var(--mt); left: 0; right: 0; width: auto; z-index: 66;
+    padding: 0 16px 24px 30px; border-top: 1px solid #2a2a2a; transition: height 0.2s ease; }
+  html.v2 .profile.full { height: calc(100vh - var(--top) - var(--mt)); }
+  html.v2 .pf-grip { display: flex; position: sticky; top: 0; z-index: 2; width: calc(100% + 46px); margin: 0 -16px 10px -30px;
+    height: 34px; align-items: center; justify-content: center; gap: 8px; background: var(--panel); border: 0;
+    color: var(--ink); opacity: 0.8; font: 700 9.5px var(--sans); text-transform: uppercase; cursor: pointer; }
+  html.v2 .pf-grip i { width: 30px; height: 3px; border-radius: 2px; background: var(--ink); opacity: 0.5; }
   html.v2 .pf2-name { font-size: 22px; }
   html.v2 .pf2-spec { grid-template-columns: repeat(2, 30px minmax(0, 1fr)); }
   /* master index = one scrolling column */

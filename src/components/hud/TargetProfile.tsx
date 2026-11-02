@@ -17,6 +17,8 @@ export default function TargetProfile() {
   const snap = useEngine();
   const inst = snap.selectedInstitution ? INSTITUTION_INDEX[snap.selectedInstitution] : null;
   const [tick, setTick] = useState(0);
+  const [full, setFull] = useState(false);   // phones: half sheet (map stays usable) ↔ full screen
+  useEffect(() => { setFull(false); }, [inst?.id]);
   useEffect(() => { const t = setInterval(() => setTick((n) => n + 1), 1000); return () => clearInterval(t); }, []);
   const links = useMemo(() => (inst ? nearest(inst, 6) : []), [inst]);
   const [osm, setOsm] = useState<OsmState>({ status: 'loading' });
@@ -76,7 +78,8 @@ export default function TargetProfile() {
   const approx = inst.tags?.includes('approx-coords');
 
   return (
-    <div className="profile panel">
+    <div className={`profile panel ${full ? 'full' : ''}`}>
+      {V2 && <button className="pf-grip" onClick={() => setFull((f) => !f)} aria-label={full ? 'Collapse profile' : 'Expand profile'}><i />{full ? 'Show map' : 'Expand'}</button>}
       {V2 ? (() => {
         // Tomb header: counter · type line · big name, with ◂ ▸ stepping through the hot list
         const n = INSTITUTIONS.findIndex((d) => d.id === inst.id) + 1;

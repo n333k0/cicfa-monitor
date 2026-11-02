@@ -17,6 +17,7 @@ import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
 import type { AttackEvent } from '../sim/types';
 import { V2, INK } from '../theme';
+import { PICK_RADIUS } from '../sim/touch';
 
 // GLOBE — the piece's red planet (redone 2026-11-02 after the artist's notes): dark oxblood
 // ocean, crimson land with bright coasts, an atmosphere rim, readable white labels
@@ -251,6 +252,7 @@ export default function Globe() {
       <div className="globe-atmo" style={{ width: rimPx * 2, height: rimPx * 2 }} />
       <DeckGL
         views={VIEW}
+        pickingRadius={PICK_RADIUS}
         viewState={vs}
         useDevicePixels={DPR}
         onViewStateChange={(p: { viewState: unknown }) => setVs(p.viewState)}

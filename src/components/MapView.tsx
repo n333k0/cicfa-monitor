@@ -13,6 +13,7 @@ const GLYPHS = VECTOR_LIST.map((v) => v.glyph).join('');
 import coastline from '../data/coastline.json';
 import borders from '../data/borders.json';
 import { V2, MAP_FONT, INK } from '../theme';
+import { PICK_RADIUS, IS_PHONE } from '../sim/touch';
 import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
@@ -98,7 +99,16 @@ export default function MapView() {
   useEffect(() => {
     const t = engine.consumeFlyTarget();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (t) setVs((v: any) => ({ ...v, longitude: t.lon, latitude: t.lat, zoom: t.zoom, transitionDuration: 'auto', transitionInterpolator: transition }));
+    if (t) setVs((v: any) => {
+      let { lon, lat } = t;
+      if (IS_PHONE) {
+        // shift the camera so the target sits ~22% of the screen above centre, clear of the bottom sheet
+        const W = window.innerWidth, H = window.innerHeight;
+        const vp = new WebMercatorViewport({ width: W, height: H, longitude: lon, latitude: lat, zoom: t.zoom });
+        [lon, lat] = vp.unproject([W / 2, H / 2 + H * 0.22]);
+      }
+      return { ...v, longitude: lon, latitude: lat, zoom: t.zoom, transitionDuration: 'auto', transitionInterpolator: transition };
+    });
   }, [snap.selectedInstitution, snap.version]);
 
   // console / exhibition hook: CICFA_view(lon, lat, zoom) moves the camera
@@ -218,7 +228,9 @@ export default function MapView() {
     // institution name labels — appear as you zoom in (targeted + selected only, to avoid clutter)
     new TextLayer({
       id: 'inst-labels',
-      data: labels,
+      data: labels, pickable: true,
+      onClick: (i: PickingInfo) => { if (i.object) engine.selectInstitution((i.object as { id: string }).id); return true; },
+      onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `▸ ${(i.object as { name: string }).name}`, hint: 'CLICK · OPEN TARGET PROFILE' } : null),
       getPosition: (d: typeof insts[number]) => [d.lon, d.lat],
       getText: (d: typeof insts[number]) => d.name.toUpperCase(),
       getSize: 11, sizeUnits: 'pixels',
@@ -293,6 +305,7 @@ export default function MapView() {
       getPosition: (c: Cam) => [c.lon, c.lat], getRadius: 3, radiusMinPixels: 2.2, radiusMaxPixels: 5,
       getFillColor: [120, 205, 225, 225], getLineColor: [10, 20, 26, 220],
       onHover: (i: PickingInfo) => setCamHover(i.object ? { x: i.x, y: i.y, cam: i.object as Cam } : null),
+      onClick: (i: PickingInfo) => { if (i.object) setCamHover((h) => (h?.cam.id === (i.object as Cam).id ? null : { x: i.x, y: i.y, cam: i.object as Cam })); return true; },
     }),
     new TextLayer({
       id: 'cam-glyphs', data: vs.zoom >= 11 ? cams : [],
@@ -310,6 +323,7 @@ export default function MapView() {
         viewState={vs}
         onViewStateChange={(p: { viewState: unknown }) => setVs(p.viewState)}
         controller
+        pickingRadius={PICK_RADIUS}
         layers={layers}
         getCursor={getCursor}
       />

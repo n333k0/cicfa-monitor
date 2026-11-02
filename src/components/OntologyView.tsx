@@ -8,6 +8,7 @@ import { INSTITUTIONS } from '../data/institutions';
 import { AGENTS } from '../data/agents';
 import { VECTORS } from '../data/vectors';
 import { MAP_FONT } from '../theme';
+import { PICK_RADIUS } from '../sim/touch';
 import { engine } from '../sim/engine';
 import { useEngine } from '../sim/useEngine';
 
@@ -129,7 +130,7 @@ export default function OntologyView() {
 
   return (
     <div className="map-root">
-      <DeckGL views={new OrthographicView({})} viewState={vs} onViewStateChange={(p: { viewState: unknown }) => setVs(p.viewState)} controller layers={layers} />
+      <DeckGL views={new OrthographicView({})} pickingRadius={PICK_RADIUS} viewState={vs} onViewStateChange={(p: { viewState: unknown }) => setVs(p.viewState)} controller layers={layers} />
       {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}</div>}
       <div className="map-vignette" />
       <div className="map-scanlines" />
