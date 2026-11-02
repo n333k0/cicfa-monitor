@@ -45,7 +45,7 @@ export default function App() {
   const Stage = snap.viewMode === 'globe' ? Globe : snap.viewMode === 'ontology' ? Ontology : MapView;
 
   return (
-    <div className={`shell ${snap.panelMode} mt-${mtab}`}>
+    <div className={`shell ${snap.panelMode} mt-${mtab} ${snap.selectedInstitution ? 'has-profile' : ''}`}>
       <Stage />
       {snap.selectedInstitution ? <TargetProfile /> : <RawStream />}
       {!V2 && <GlitchFX />}
@@ -65,7 +65,11 @@ export default function App() {
         <EventFeed />
       </div>
       <Dock />
-      {V2 && <MobileTabs tab={mtab} onTab={setMtab} />}
+      {V2 && <MobileTabs tab={mtab} onTab={(t) => {
+        // switching section closes an open target profile (it behaves like one more section)
+        if (t !== 'none' && snap.selectedInstitution) engine.selectInstitution(null);
+        setMtab(t);
+      }} />}
       {V2 && <MasterIndex open={indexOpen} onClose={() => setIndexOpen(false)} />}
     </div>
   );

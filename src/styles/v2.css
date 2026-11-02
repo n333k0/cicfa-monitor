@@ -226,7 +226,7 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   /* icon row sits right above the tab bar; when a tab opens it rises with the sheet to just under the logo */
   html.v2 .irail { top: auto; bottom: var(--tb); left: 0; right: 0; height: var(--ic); padding: 0 16px;
     transform: none; justify-content: space-between; gap: 0; z-index: 71; background: none; transition: bottom 0.22s ease; }
-  html.v2 .shell:not(.mt-none) .irail { bottom: calc(100dvh - var(--top)); }
+  html.v2 .shell:not(.mt-none) .irail, html.v2 .shell.has-profile .irail { bottom: calc(100dvh - var(--top)); }
   html.v2 .rail-btn { width: 32px; height: 32px; opacity: 0.6; filter: none; }
   html.v2 .rail-sep, html.v2 .rail-tip { display: none; }
   /* things that don't fit a phone */
@@ -252,9 +252,9 @@ html.v2 .recon-tag, html.v2 .recon-cap { font-family: var(--sans); letter-spacin
   html.v2 .vrow { padding: 4px 0; } html.v2 .ev { padding: 3px 0; }
   html.v2 .chips { gap: 10px 18px; } html.v2 .chip { padding: 4px 0; }
   /* target profile = bottom sheet: the map above stays visible + tappable; grip expands it to full height */
-  html.v2 .profile { position: fixed; top: auto; height: 46vh; bottom: var(--mt); left: 0; right: 0; width: auto; z-index: 66;
+  html.v2 .profile { position: fixed; top: auto; height: 50vh; bottom: var(--tb); left: 0; right: 0; width: auto; z-index: 66;
     padding: 0 16px 24px 30px; border-top: 1px solid #2a2a2a; transition: height 0.2s ease; }
-  html.v2 .profile.full { height: calc(100dvh - var(--top) - var(--mt)); }
+  html.v2 .profile.full { height: calc(100dvh - var(--top) - var(--tb)); }
   html.v2 .pf-grip { display: flex; position: sticky; top: 0; z-index: 2; width: calc(100% + 46px); margin: 0 -16px 10px -30px;
     height: 34px; align-items: center; justify-content: center; gap: 8px; background: var(--panel); border: 0;
     color: var(--ink); opacity: 0.8; font: 700 9.5px var(--sans); text-transform: uppercase; cursor: pointer; }
