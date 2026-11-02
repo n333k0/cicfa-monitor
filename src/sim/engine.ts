@@ -240,7 +240,7 @@ class Engine {
 
   private tick(dt: number) {
     this.clock += dt;
-    let changed = false;
+
 
     // spawn per-agent by cadence
     for (const a of this.agents) {
@@ -248,7 +248,7 @@ class Engine {
       const interval = 60_000 / (a.cadence * 1.9); // global activity multiplier — more attacks
       if (this.clock - (this.lastSpawn[a.id] || 0) >= interval) {
         this.lastSpawn[a.id] = this.clock;
-        if (Math.random() < (a.status === 'degraded' ? 0.6 : 1)) { this.spawn(a.id); changed = true; }
+        if (Math.random() < (a.status === 'degraded' ? 0.6 : 1)) { this.spawn(a.id); }
       }
     }
 
@@ -261,13 +261,14 @@ class Engine {
       if (age >= e.durationMs + 1100) {
         this.active.splice(k, 1);
         this.resolve(e, true);
-        changed = true;
       }
     }
 
-    // stats heartbeat ~4Hz so counters/feed update without 60fps churn
-    this.statsAccum += dt;
-    if (changed || this.statsAccum > 250) { this.statsAccum = 0; this.notifyChange(); }
+    // HUD heartbeat: at most ~4Hz (new/resolved events are batched into the next beat; the map
+    // views animate arcs per frame from getActive(), so nothing visible waits on this)
+    // (dt is sim time, already scaled by speed → divide back out so it stays ~4 beats per real second)
+    this.statsAccum += dt / Math.max(0.1, this.speed);
+    if (this.statsAccum > 250) { this.statsAccum = 0; this.notifyChange(); }
   }
 
   // ── controls ────────────────────────────────────────────────────

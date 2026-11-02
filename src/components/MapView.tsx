@@ -24,6 +24,10 @@ import type { AttackEvent } from '../sim/types';
 
 // FLAT view: pure thin-line minimal map on black (no basemap tiles / fills / labels).
 const transition = new FlyToInterpolator({ speed: 1.6 });
+const VIEWS = new DeckMapView({ repeat: true });
+// cap the drawing buffer at 1.5× on retina screens (2× = 4× the pixels for thin lines that barely change)
+const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+const getCursor = ({ isDragging, isHovering }: { isDragging: boolean; isHovering: boolean }) => (isDragging ? 'grabbing' : isHovering ? 'pointer' : 'grab');
 
 function graticule() {
   const feats: GeoJSON.Feature[] = [];
@@ -93,11 +97,16 @@ export default function MapView() {
   const active = engine.getActive().filter((e) => engine.passesFilter(e));
   const hits = snap.hits;
   const sel = snap.selectedInstitution;
-  // memoised per data tick (~4Hz), not per animation frame — avoids re-uploading 2,700+ points every frame
+  // the 2,700 institution points only change when the region filter changes (not on every data tick)
+  const regionKey = [...snap.filters.regions].sort().join();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const insts = useMemo(() => INSTITUTIONS.filter((d) => snap.filters.regions.has(d.region)), [snap.version]);
+  const insts = useMemo(() => INSTITUTIONS.filter((d) => snap.filters.regions.has(d.region)), [regionKey]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const domes = useMemo(() => insts.filter((d) => (hits[d.id] ?? 0) > 0), [insts, hits]);
+  const domes = useMemo(() => insts.filter((d) => (hits[d.id] ?? 0) > 0), [insts, snap.version]);
+  // label declutter is the costliest step: refresh it ~1×/s for new hits, immediately on camera/selection change
+  const labelEpoch = Math.floor(snap.version / 6);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const ops = useMemo(() => AGENTS.filter((a) => a.status !== 'offline'), [snap.version]);
   // labels: only what is on screen. zoom ≥ 4.6 names every institution, ≥ 3.2 only those under attack.
   const zq = Math.round(vs.zoom * 4) / 4;
   const qstep = (360 / (512 * 2 ** zq)) * 40;                 // re-place labels every ~40px of panning
@@ -128,7 +137,7 @@ export default function MapView() {
     }
     return out;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zq, lonq, latq, insts, hits, sel]);
+  }, [zq, lonq, latq, insts, labelEpoch, sel]);
 
   // link analysis for the selected target: who hit it (op origins) + its physical neighbours
   const selInst = sel ? INSTITUTION_INDEX[sel] : null;
@@ -141,6 +150,9 @@ export default function MapView() {
   }, [selInst, snap.version]);
 
   const worldFade = Math.max(0, Math.min(1, (10 - vs.zoom) / 2.5));   // crude world outlines give way to real streets
+  // city tiles: rebuild the layer only when its zoom bucket / opacity step / satellite flag changes
+  const cityZ = Math.round(vs.zoom * 8) / 8;
+  const city = useMemo(() => cityLayer(cityZ, sat), [cityZ, sat]);
   const layers = [
     // REAL god's-eye overhead imagery (Esri World Imagery, no key) — desaturated + cool-tinted to sit under the monitor's lines
     sat ? new TileLayer({
@@ -156,7 +168,7 @@ export default function MapView() {
         });
       },
     }) : null,
-    cityLayer(vs.zoom, sat),
+    city,
     new GeoJsonLayer({ id: 'graticule', opacity: worldFade, visible: worldFade > 0, data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'borders', opacity: worldFade, visible: worldFade > 0, data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'coast', opacity: worldFade, visible: worldFade > 0, data: coastline as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [205, 214, 228, 120], lineWidthUnits: 'pixels', getLineWidth: 0.75 }),
@@ -223,7 +235,7 @@ export default function MapView() {
     }),
     // operation origins (the Cyber Weapons Lab on the map)
     new ScatterplotLayer({
-      id: 'ops', data: AGENTS.filter((a) => a.status !== 'offline'), pickable: true,
+      id: 'ops', data: ops, pickable: true,
       radiusUnits: 'pixels', stroked: true, lineWidthUnits: 'pixels',
       getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
       getRadius: (a: typeof AGENTS[number]) => (snap.selectedAgent === a.id ? 6 : 3.5),
@@ -234,7 +246,7 @@ export default function MapView() {
       updateTriggers: { getRadius: [snap.selectedAgent] },
     }),
     new TextLayer({
-      id: 'op-labels', data: AGENTS.filter((a) => a.status !== 'offline'),
+      id: 'op-labels', data: ops,
       getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
       getText: (a: typeof AGENTS[number]) => a.handle,
       getSize: 11, sizeUnits: 'pixels', getColor: [230, 0, 38, 230],
@@ -260,12 +272,13 @@ export default function MapView() {
   return (
     <div className="map-root">
       <DeckGL
-        views={new DeckMapView({ repeat: true })}
+        views={VIEWS}
+        useDevicePixels={DPR}
         viewState={vs}
         onViewStateChange={(p: { viewState: unknown }) => setVs(p.viewState)}
         controller
         layers={layers}
-        getCursor={({ isDragging, isHovering }: { isDragging: boolean; isHovering: boolean }) => (isDragging ? 'grabbing' : isHovering ? 'pointer' : 'grab')}
+        getCursor={getCursor}
       />
       <MapHud lon={vs.longitude} lat={vs.latitude} zoom={vs.zoom}
         sat={sat} onSat={() => setSat((v) => !v)} tilt={tilt} onTilt={toggleTilt} />

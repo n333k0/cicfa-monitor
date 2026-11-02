@@ -2,9 +2,10 @@ import { engine } from '../../sim/engine';
 import { useEngine } from '../../sim/useEngine';
 import type { ViewMode } from '../../sim/types';
 
-// MAP + NETWORK only (artist, 2026-11-02: GLOBE out until it is redone red/readable; ARC led nowhere)
+// MAP · GLOBE · NETWORK (artist, 2026-11-02: ARC removed; GLOBE back once redone red + readable)
 const VIEWS: { id: ViewMode; label: string; ready: boolean }[] = [
   { id: 'flat', label: 'MAP', ready: true },
+  { id: 'globe', label: 'GLOBE', ready: true },
   { id: 'ontology', label: 'NETWORK', ready: true },
 ];
 

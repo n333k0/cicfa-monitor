@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import MapView from './components/MapView';
+import Globe from './components/GlobeView';
 import Ontology from './components/OntologyView';
 import TopBar from './components/hud/TopBar';
 import AgentPanel from './components/hud/AgentPanel';
@@ -25,7 +26,7 @@ export default function App() {
     return () => { engine.stop(); detach(); };
   }, []);
 
-  const Stage = snap.viewMode === 'ontology' ? Ontology : MapView;
+  const Stage = snap.viewMode === 'globe' ? Globe : snap.viewMode === 'ontology' ? Ontology : MapView;
 
   return (
     <div className={`shell ${snap.panelMode}`}>

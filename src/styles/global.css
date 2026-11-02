@@ -57,9 +57,21 @@ body {
 .map-vignette { background: radial-gradient(135% 115% at 50% 48%, transparent 62%, rgba(0,0,0,0.7) 100%); }
 .map-scanlines {
   background: repeating-linear-gradient(0deg, rgba(0,0,0,0.26) 0, rgba(0,0,0,0.26) 1px, transparent 2px, transparent 4px);
-  opacity: 0.4; mix-blend-mode: multiply;
+  opacity: 0.4; /* plain alpha: same look as multiply over black, without forcing a full-screen blend every frame */
 }
 .map-grain { display: none; }
+/* GLOBE: keep its own red palette (no grayscale filter) + atmosphere rim behind the sphere */
+.globe-root canvas { filter: none; }
+.globe-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.globe-labels span { position: absolute; left: 0; top: 0; white-space: nowrap; text-transform: uppercase; will-change: transform; }
+.gl-country { font-size: 9px; letter-spacing: 2px; color: #ffd0d6; text-shadow: 0 0 3px #2a0208, 0 0 2px #2a0208; }
+.gl-city { font-size: 11px; letter-spacing: 1px; color: #fff; font-weight: 700; margin-top: -7px; text-shadow: 0 0 4px #000, 0 0 2px #000; }
+.gl-city i { display: inline-block; width: 5px; height: 5px; border: 1px solid #fff; border-radius: 50%; margin: 0 6px 1px -4px; vertical-align: middle; }
+.gl-city b { color: #ff8a9c; font-weight: 400; }
+.gl-sel { font-size: 12px; letter-spacing: 1px; color: #ffdc96; font-weight: 700; margin: -22px 0 0 10px; text-shadow: 0 0 4px #000, 0 0 2px #000; }
+.globe-atmo { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none;
+  box-shadow: 0 0 34px 6px rgba(255, 40, 70, 0.45), 0 0 110px 30px rgba(230, 0, 38, 0.18), 0 0 260px 80px rgba(230, 0, 38, 0.07);
+  background: radial-gradient(circle, rgba(230,0,38,0) 60%, rgba(255,60,90,0.35) 100%); }
 /* ── God's-Eye HUD chrome (MAP view only) ───────────────────────────────── */
 .ghud { position: absolute; left: 364px; right: 404px; top: 0; bottom: 0; z-index: 6;
   pointer-events: none; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
@@ -70,7 +82,7 @@ body {
 .ghud-rec i { width: 6px; height: 6px; border-radius: 50%; background: var(--crimson); animation: ghud-blink 1.1s steps(1) infinite; }
 .ghud-tick { color: rgba(127,209,160,0.7); flex: 0 0 auto; }
 @keyframes ghud-blink { 50% { opacity: 0.15; } }
-.ghud-coord { position: absolute; top: 72px; left: 0; color: var(--ink-dim); line-height: 1.55;
+.ghud-coord { position: absolute; top: 72px; right: 0; text-align: right; color: var(--ink-dim); line-height: 1.55;
   text-shadow: 0 0 4px #000; font-variant-numeric: tabular-nums; }
 .ghud-coord .ghud-dim { color: var(--ink-faint); }
 .ghud-controls { position: absolute; bottom: 56px; left: 0; right: 0; display: flex; flex-wrap: wrap;
