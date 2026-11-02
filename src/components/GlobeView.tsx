@@ -97,7 +97,7 @@ export default function Globe() {
   const snap = useEngine();
   useFrame();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [vs, setVs] = useState<any>({ longitude: -32, latitude: 12, zoom: 1.7, pitch: 0, bearing: 0, minZoom: 0.6, maxZoom: 5 });
+  const [vs, setVs] = useState<any>({ longitude: -32, latitude: 12, zoom: window.innerWidth <= 900 ? 1.0 : 1.7, pitch: 0, bearing: 0, minZoom: 0.6, maxZoom: 5 });
   const [hover, setHover] = useState<{ x: number; y: number; text: string; hint: string } | null>(null);
   const interacting = useRef(false);
   const pauseUntil = useRef(0);

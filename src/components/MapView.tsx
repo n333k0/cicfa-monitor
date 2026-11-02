@@ -51,7 +51,10 @@ export default function MapView() {
   // default framing (chosen by the artist, 2026-11-01): one world ≈ 64% of the screen width, centred on the
   // South Atlantic so Buenos Aires, Europe and Japan all sit in the open middle; wrapped copies show at the edges
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [vs, setVs] = useState<any>(() => ({ longitude: -16, latitude: -6, zoom: Math.max(1, Math.log2((window.innerWidth * 0.64) / 512)), pitch: 0, bearing: 0 }));
+  const [vs, setVs] = useState<any>(() => (window.innerWidth <= 900
+    // phones: the whole world across the screen, the Americas + Atlantic in view
+    ? { longitude: -42, latitude: -12, zoom: Math.max(0, Math.log2((window.innerWidth * 1.15) / 512)), pitch: 0, bearing: 0 }
+    : { longitude: -16, latitude: -6, zoom: Math.max(1, Math.log2((window.innerWidth * 0.64) / 512)), pitch: 0, bearing: 0 }));
   const [hover, setHover] = useState<{ x: number; y: number; text: string; hint: string } | null>(null);
   // public traffic cameras in view (markers + feed card) — only where official catalogs exist
   const [cams, setCams] = useState<Cam[]>([]);

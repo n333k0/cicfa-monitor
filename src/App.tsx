@@ -19,12 +19,22 @@ import IconRail from './components/v2/IconRail';
 import Brand from './components/v2/Brand';
 import Spec from './components/v2/Spec';
 import MasterIndex from './components/v2/MasterIndex';
+import MobileTabs, { MobileHead, type MTab } from './components/v2/MobileTabs';
 import { useEngine } from './sim/useEngine';
 import { installGlobalBridge, attachPostMessageBridge } from './sim/connectors';
 
 export default function App() {
   const snap = useEngine();
   const [indexOpen, setIndexOpen] = useState(false);
+  // phones (v2): which bottom tab is open; a profile or a tap on the map collapses it
+  const [mtab, setMtab] = useState<MTab>('none');
+  useEffect(() => { if (snap.selectedInstitution) setMtab('none'); }, [snap.selectedInstitution]);
+  useEffect(() => {
+    if (mtab === 'none') return;
+    const f = (e: PointerEvent) => { if ((e.target as Element)?.closest?.('.map-root')) setMtab('none'); };
+    window.addEventListener('pointerdown', f);
+    return () => window.removeEventListener('pointerdown', f);
+  }, [mtab]);
   useEffect(() => {
     engine.start();
     installGlobalBridge();
@@ -35,12 +45,13 @@ export default function App() {
   const Stage = snap.viewMode === 'globe' ? Globe : snap.viewMode === 'ontology' ? Ontology : MapView;
 
   return (
-    <div className={`shell ${snap.panelMode}`}>
+    <div className={`shell ${snap.panelMode} mt-${mtab}`}>
       <Stage />
       {snap.selectedInstitution ? <TargetProfile /> : <RawStream />}
       {!V2 && <GlitchFX />}
       <TopBar />
       {!V2 && <ViewSelector />}
+      {V2 && <MobileHead />}
       {V2 && <IconRail onIndex={() => setIndexOpen(true)} />}
       <div className="col-l">
         {V2 && <Brand />}
@@ -54,6 +65,7 @@ export default function App() {
         <EventFeed />
       </div>
       <Dock />
+      {V2 && <MobileTabs tab={mtab} onTab={setMtab} />}
       {V2 && <MasterIndex open={indexOpen} onClose={() => setIndexOpen(false)} />}
     </div>
   );

@@ -29,7 +29,7 @@ export default function OntologyView() {
   const linksRef = useRef<Link[]>([]);
   const [, setTick] = useState(0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [vs, setVs] = useState<any>({ target: [0, 0, 0], zoom: 0.22, minZoom: -2, maxZoom: 4 });
+  const [vs, setVs] = useState<any>({ target: [0, 0, 0], zoom: window.innerWidth <= 900 ? -0.75 : 0.22, minZoom: -2, maxZoom: 4 });
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
 
   // rebuild node/link set from current telemetry (~4Hz via snapshot version)
