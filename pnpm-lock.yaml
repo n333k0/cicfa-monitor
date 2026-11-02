@@ -35,6 +35,9 @@ importers:
       maplibre-gl:
         specifier: ^6.16.0
         version: 6.16.0
+      mgrs:
+        specifier: ^2.2.0
+        version: 2.2.0
       react:
         specifier: ^19.3.1
         version: 19.3.1
@@ -1774,6 +1777,9 @@ packages:
 
   meshoptimizer@1.3.0:
     resolution: {integrity: sha512-2oZqMAcEEiCtXWUjIGtZ71oPx1B0ZxYGTqIKsXB1wzWFhleNsCFxQuUJzgCV706bRcwPWtMGf1odmQvAcqKkIw==}
+
+  mgrs@2.2.0:
+    resolution: {integrity: sha512-BHeewhEJ1n2MOFKvGXFPMxgfczWArFGltBYSZ+JTzlNfHSwJ7gEsXGXFjaU619yLmpmtyoLHu+d8Sd6ACsd0QA==}
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
@@ -4050,6 +4056,8 @@ snapshots:
       is-buffer: 1.1.6
 
   meshoptimizer@1.3.0: {}
+
+  mgrs@2.2.0: {}
 
   minimist@1.2.8: {}
 

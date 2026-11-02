@@ -60,14 +60,49 @@ body {
   opacity: 0.4; mix-blend-mode: multiply;
 }
 .map-grain { display: none; }
-.map-sat { position: absolute; top: 50px; left: 50%; transform: translateX(-50%); z-index: 6;
-  background: rgba(0,0,0,0.5); border: 1px solid rgba(235,238,245,0.25); color: var(--ink-dim);
-  font: inherit; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px;
-  cursor: pointer; pointer-events: auto; }
-.map-sat:hover { border-color: rgba(235,238,245,0.5); color: var(--ink); }
-.map-sat span { color: var(--ink-faint); }
-.map-sat.on { border-color: rgba(230,0,38,0.6); color: var(--ink); }
-.map-sat.on span { color: var(--crimson); }
+/* ── God's-Eye HUD chrome (MAP view only) ───────────────────────────────── */
+.ghud { position: absolute; left: 364px; right: 404px; top: 0; bottom: 0; z-index: 6;
+  pointer-events: none; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+.ghud-class { position: absolute; top: 52px; left: 0; right: 0; display: flex; justify-content: space-between;
+  align-items: center; gap: 14px; color: var(--ink-faint); white-space: nowrap; text-shadow: 0 0 4px #000; }
+.ghud-cls { color: var(--ink-dim); overflow: hidden; text-overflow: ellipsis; }
+.ghud-rec { color: var(--crimson); display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; }
+.ghud-rec i { width: 6px; height: 6px; border-radius: 50%; background: var(--crimson); animation: ghud-blink 1.1s steps(1) infinite; }
+.ghud-tick { color: rgba(127,209,160,0.7); flex: 0 0 auto; }
+@keyframes ghud-blink { 50% { opacity: 0.15; } }
+.ghud-coord { position: absolute; top: 72px; left: 0; color: var(--ink-dim); line-height: 1.55;
+  text-shadow: 0 0 4px #000; font-variant-numeric: tabular-nums; }
+.ghud-coord .ghud-dim { color: var(--ink-faint); }
+.ghud-controls { position: absolute; bottom: 56px; left: 0; right: 0; display: flex; flex-wrap: wrap;
+  justify-content: center; align-items: center; gap: 6px; }
+.ghud-controls button { pointer-events: auto; background: rgba(0,0,0,0.5); border: 1px solid rgba(235,238,245,0.2);
+  color: var(--ink-dim); font: inherit; font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; cursor: pointer; }
+.ghud-controls button:hover { border-color: rgba(235,238,245,0.5); color: var(--ink); }
+.ghud-controls button.on { border-color: rgba(230,0,38,0.6); color: var(--ink); background: rgba(230,0,38,0.12); }
+.ghud-sep { color: var(--ink-faint); margin: 0 2px 0 8px; }
+
+/* sensor visual presets — recolour the whole map canvas (MAP only; globe keeps its default) */
+.map-root.preset-crt canvas { filter: grayscale(0.15) contrast(1.35) brightness(1.06) saturate(1.2); }
+.map-root.preset-nvg canvas { filter: grayscale(1) brightness(1.15) contrast(1.2) sepia(1) hue-rotate(55deg) saturate(4); }
+.map-root.preset-flir canvas { filter: grayscale(1) contrast(1.5) brightness(1.0) sepia(1) hue-rotate(325deg) saturate(5); }
+.map-root.preset-noir canvas { filter: grayscale(1) contrast(1.5) brightness(0.9); }
+/* CRT: stronger scanlines + flicker */
+.map-root.preset-crt .map-scanlines { opacity: 1; }
+.map-root.preset-crt::after { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: rgba(120,255,180,0.04); mix-blend-mode: screen; animation: ghud-flicker 5s steps(30) infinite; }
+@keyframes ghud-flicker { 0%,97%,100% { opacity: 0.25; } 98% { opacity: 0.55; } 99% { opacity: 0.1; } }
+.map-root.preset-flir::after, .map-root.preset-nvg::after { content: ''; position: absolute; inset: 0; z-index: 3;
+  pointer-events: none; box-shadow: inset 0 0 160px rgba(0,0,0,0.7); }
+
+.cam-card { position: absolute; z-index: 7; width: 240px; background: rgba(0,0,0,0.85);
+  border: 1px solid rgba(120,205,225,0.5); pointer-events: none; box-shadow: 0 0 20px rgba(0,0,0,0.7); }
+.cam-card img { width: 100%; height: 150px; object-fit: cover; display: block;
+  filter: grayscale(0.4) contrast(1.2) saturate(0.6) brightness(0.96); }
+.cam-card-cap { display: flex; justify-content: space-between; gap: 8px; padding: 3px 6px;
+  font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase; }
+.cam-card-cap .cc-name { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cam-card-cap .cc-src { color: rgba(120,205,225,0.85); flex: 0 0 auto; }
 .map-tooltip {
   position: absolute; z-index: 60; pointer-events: none; color: var(--crimson);
   font-size: 11px; letter-spacing: 0.06em; white-space: nowrap;

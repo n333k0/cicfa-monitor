@@ -15,6 +15,8 @@ import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
 import { cityLayer } from './cityLayer';
+import MapHud, { type Preset } from './MapHud';
+import { camsInView, camStamp, type Cam } from '../sim/recon';
 import { nearest } from '../sim/intel';
 import { INSTITUTION_INDEX } from '../data/institutions';
 import { AGENT_INDEX } from '../data/agents';
@@ -40,14 +42,43 @@ export default function MapView() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [vs, setVs] = useState<any>(() => ({ longitude: -16, latitude: -6, zoom: Math.max(1, Math.log2((window.innerWidth * 0.64) / 512)), pitch: 0, bearing: 0 }));
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
-  // REAL overhead imagery (Esri World Imagery, keyless) as a god's-eye basemap, toggled on
-  const [sat, setSat] = useState(false);
+  // public traffic cameras in view (markers + feed card) — only where official catalogs exist
+  const [cams, setCams] = useState<Cam[]>([]);
+  const [camHover, setCamHover] = useState<{ x: number; y: number; cam: Cam } | null>(null);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if ((e.key === 's' || e.key === 'S') && !e.metaKey && !e.ctrlKey) setSat((v) => !v); };
+    if (vs.zoom < 8) { setCams([]); return; }
+    let alive = true;
+    try {
+      const vp = new WebMercatorViewport({ ...vs, width: window.innerWidth, height: window.innerHeight });
+      const [w, s, e, n] = vp.getBounds();
+      camsInView(s, w, n, e).then((c) => { if (alive) setCams(c); }).catch(() => {});
+    } catch { /* viewport edge cases */ }
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Math.round(vs.longitude * 20), Math.round(vs.latitude * 20), Math.round(vs.zoom)]);
+  // god's-eye controls: REAL overhead imagery, oblique tilt, sensor visual preset
+  const [sat, setSat] = useState(false);
+  const [tilt, setTilt] = useState(false);
+  const [preset, setPreset] = useState<Preset>('normal');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const toggleTilt = () => setVs((v: any) => ({ ...v, pitch: v.pitch > 0 ? 0 : 50, transitionDuration: 400 }));
+  useEffect(() => { setTilt(vs.pitch > 0); }, [vs.pitch]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = document.activeElement;
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+      if (e.key === 's' || e.key === 'S') setSat((v) => !v);
+      else if (e.key === 't' || e.key === 'T') toggleTilt();
+      else if (e.key === 'v' || e.key === 'V') setPreset((p) => { const o: Preset[] = ['normal', 'crt', 'nvg', 'flir', 'noir']; return o[(o.indexOf(p) + 1) % o.length]; });
+    };
     window.addEventListener('keydown', onKey);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).CICFA_sat = (on?: boolean) => setSat((v) => (on === undefined ? !v : !!on));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).CICFA_preset = (p: Preset) => setPreset(p);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -213,10 +244,24 @@ export default function MapView() {
       fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
       getPixelOffset: [7, 0], characterSet: 'auto',
     }),
+    // PUBLIC traffic cameras (official catalogs) — cyan pins; hover shows the live feed
+    new ScatterplotLayer({
+      id: 'cams', data: cams, pickable: true, radiusUnits: 'pixels',
+      stroked: true, filled: true, lineWidthUnits: 'pixels', getLineWidth: 1,
+      getPosition: (c: Cam) => [c.lon, c.lat], getRadius: 3, radiusMinPixels: 2.2, radiusMaxPixels: 5,
+      getFillColor: [120, 205, 225, 225], getLineColor: [10, 20, 26, 220],
+      onHover: (i: PickingInfo) => setCamHover(i.object ? { x: i.x, y: i.y, cam: i.object as Cam } : null),
+    }),
+    new TextLayer({
+      id: 'cam-glyphs', data: vs.zoom >= 11 ? cams : [],
+      getPosition: (c: Cam) => [c.lon, c.lat], getText: () => '▣',
+      getSize: 12, sizeUnits: 'pixels', getColor: [120, 205, 225, 180],
+      fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'middle', getAlignmentBaseline: 'center', characterSet: 'auto',
+    }),
   ];
 
   return (
-    <div className="map-root">
+    <div className={`map-root preset-${preset}`}>
       <DeckGL
         views={new DeckMapView({ repeat: true })}
         viewState={vs}
@@ -224,10 +269,15 @@ export default function MapView() {
         controller
         layers={layers}
       />
-      <button className={`map-sat ${sat ? 'on' : ''}`} onClick={() => setSat((v) => !v)} title="Overhead imagery (S)">
-        ◹ SAT <span>{sat ? 'ON' : 'OFF'}</span>
-      </button>
+      <MapHud lon={vs.longitude} lat={vs.latitude} zoom={vs.zoom} preset={preset} onPreset={setPreset}
+        sat={sat} onSat={() => setSat((v) => !v)} tilt={tilt} onTilt={toggleTilt} />
       {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}</div>}
+      {camHover && (
+        <div className="cam-card" style={{ left: Math.min(camHover.x + 14, window.innerWidth - 260), top: Math.min(camHover.y + 14, window.innerHeight - 190) }}>
+          <img src={`${camHover.cam.url}?t=${camStamp()}`} alt="" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+          <div className="cam-card-cap"><span className="cc-name">{camHover.cam.name}</span><span className="cc-src">● LIVE · {camHover.cam.source}</span></div>
+        </div>
+      )}
       <div className="map-shade" />
       <div className="map-grain" />
       <div className="map-vignette" />

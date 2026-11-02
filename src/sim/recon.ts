@@ -79,5 +79,20 @@ export async function nearestCam(lat: number, lon: number, maxKm = 0.7): Promise
   return best;
 }
 
+/** All PUBLIC cameras inside a lon/lat box (for map markers). Only loads a catalog
+ *  when its bbox intersects the view, and caps the count. */
+export async function camsInView(minLat: number, minLon: number, maxLat: number, maxLon: number, cap = 160): Promise<Cam[]> {
+  const nets = NETWORKS.filter((n) => !(n.bbox[2] < minLat || n.bbox[0] > maxLat || n.bbox[3] < minLon || n.bbox[1] > maxLon));
+  if (!nets.length) return [];
+  const out: Cam[] = [];
+  for (const n of nets) {
+    for (const c of await loadNetwork(n)) {
+      if (c.lat >= minLat && c.lat <= maxLat && c.lon >= minLon && c.lon <= maxLon) out.push(c);
+      if (out.length >= cap) break;
+    }
+  }
+  return out;
+}
+
 /** Cache-busting token so a camera still refreshes every `everyMs` (not every render). */
 export function camStamp(everyMs = 6000) { return Math.floor(Date.now() / everyMs); }
