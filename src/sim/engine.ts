@@ -35,7 +35,7 @@ export interface Stats {
   byVector: Record<VectorId, number>;
   byOutcome: Record<Outcome, number>;
   bytesExfil: number;
-  topTargets: { id: string; name: string; hits: number }[];
+  topTargets: { id: string; name: string; city: string; hits: number }[];
 }
 
 export interface Filters {
@@ -149,8 +149,8 @@ class Engine {
       if (e.vector === 'exfiltration') bytes += e.payloadBytes;
     }
     const topTargets = Object.entries(this.hits)
-      .sort((a, b) => b[1] - a[1]).slice(0, 8)
-      .map(([id, hits]) => ({ id, name: INSTITUTION_INDEX[id]?.name ?? id, hits }));
+      .sort((a, b) => b[1] - a[1]).slice(0, 30)
+      .map(([id, hits]) => ({ id, name: INSTITUTION_INDEX[id]?.name ?? id, city: INSTITUTION_INDEX[id]?.city ?? '', hits }));
     const now = this.clock;
     this.recentTimestamps = this.recentTimestamps.filter((t) => now - t < 60_000);
     return {

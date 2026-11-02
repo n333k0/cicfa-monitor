@@ -7,7 +7,8 @@ import { useEngine } from '../../sim/useEngine';
 import { fmtBytes, fmtTime, rgba } from '../../sim/format';
 import { assetStates, deadline, leakSample, nearest, scramble, threat, wikiLink } from '../../sim/intel';
 import { loadOsm, osmLink, type OsmState } from '../../sim/osm';
-import { esriPatch, nearestCam, camStamp, type Cam } from '../../sim/recon';
+import { esriPatch, camsNear, camSrc, type Cam } from '../../sim/recon';
+import { loadWiki, loadPhotos, type WikiFacts, type Photo } from '../../sim/zone';
 
 // TARGET PROFILE — the full surveillance dossier that opens when an institution is clicked.
 // Real: name, place, coordinates, public links. Simulated: everything about the attack.
@@ -25,12 +26,33 @@ export default function TargetProfile() {
     loadOsm(inst).then((s) => { if (alive) setOsm(s); });
     return () => { alive = false; };
   }, [inst]);
-  const [cam, setCam] = useState<{ cam: Cam; km: number } | null | undefined>(undefined);
+  // every PUBLIC camera in the zone (≤ 2 km), nearest first
+  const [cams, setCams] = useState<{ cam: Cam; km: number }[] | undefined>(undefined);
   useEffect(() => {
     if (!inst) return;
     let alive = true;
-    setCam(undefined);
-    nearestCam(inst.lat, inst.lon).then((c) => { if (alive) setCam(c); }).catch(() => { if (alive) setCam(null); });
+    setCams(undefined);
+    camsNear(inst.lat, inst.lon, 2, 4).then((c) => { if (alive) setCams(c); }).catch(() => { if (alive) setCams([]); });
+    return () => { alive = false; };
+  }, [inst]);
+  // Wikidata record (waits for OSM so it can use its wikidata tag; falls back to a coordinate-checked name search)
+  const [wiki, setWiki] = useState<WikiFacts | null | undefined>(undefined);
+  const osmQid = osm.status === 'ok' ? osm.data.wikidata : undefined;
+  const osmDone = osm.status !== 'loading';
+  useEffect(() => {
+    if (!inst || !osmDone) return;
+    let alive = true;
+    setWiki(undefined);
+    loadWiki(inst, osmQid).then((w) => { if (alive) setWiki(w); }).catch(() => { if (alive) setWiki(null); });
+    return () => { alive = false; };
+  }, [inst, osmDone, osmQid]);
+  // street-level photographs geotagged around the site (Wikimedia Commons)
+  const [photos, setPhotos] = useState<Photo[] | null | undefined>(undefined);
+  useEffect(() => {
+    if (!inst) return;
+    let alive = true;
+    setPhotos(undefined);
+    loadPhotos(inst.lat, inst.lon).then((p) => { if (alive) setPhotos(p); }).catch(() => { if (alive) setPhotos(null); });
     return () => { alive = false; };
   }, [inst]);
   if (!inst) return null;
@@ -55,7 +77,7 @@ export default function TargetProfile() {
   return (
     <div className="profile panel">
       <div className="panel-h"><span>Target Profile <span className="tag">// {inst.id.toUpperCase()}</span></span>
-        <span className="tag" style={{ cursor: 'pointer' }} onClick={() => engine.selectInstitution(null)}>✕ CLOSE</span></div>
+        <span className="tag clk-tag" onClick={() => engine.selectInstitution(null)}>✕ CLOSE</span></div>
 
       <div className="pf-name">{inst.name}</div>
       <div className="mini">{inst.kind} · {inst.city} · {inst.country}{inst.scene ? ` · ${inst.scene}` : ''}</div>
@@ -91,6 +113,33 @@ export default function TargetProfile() {
       </div>
 
       <div className="pf-sec pf-realblock">
+        <div className="pf-h real">Institutional record <span className="tag">// REAL · Wikidata</span></div>
+        {wiki === undefined && <div className="mini">querying public record…</div>}
+        {wiki === null && <div className="mini">no linked public record</div>}
+        {wiki && (() => {
+          const rows: [string, ReactNode][] = [];
+          const j = (a?: string[]) => a?.join(' · ');
+          if (wiki.instanceOf) rows.push(['Type', <b className="wrap">{j(wiki.instanceOf)}</b>]);
+          if (wiki.inception) rows.push(['Founded', <b>{wiki.inception}</b>]);
+          if (wiki.visitors) rows.push(['Visitors / yr', <b>{wiki.visitors.n.toLocaleString('en-US')}{wiki.visitors.year ? ` (${wiki.visitors.year})` : ''}</b>]);
+          if (wiki.collection) rows.push(['Collection', <b>{wiki.collection.toLocaleString('en-US')} WORKS</b>]);
+          if (wiki.architect) rows.push(['Architect', <b className="wrap">{j(wiki.architect)}</b>]);
+          if (wiki.director) rows.push(['Director', <b className="wrap">{j(wiki.director)}</b>]);
+          if (wiki.owner) rows.push(['Owned by', <b className="wrap">{j(wiki.owner)}</b>]);
+          if (wiki.style) rows.push(['Style', <b className="wrap">{j(wiki.style)}</b>]);
+          return (<>
+            {wiki.description && <div className="pf-text real-text">{wiki.description}</div>}
+            {rows.map(([k, v], i) => <div key={i} className="pf-row real"><span>{k}</span>{v}</div>)}
+            <div className="pf-row real"><span>Public channels</span><span style={{ textAlign: 'right', whiteSpace: 'normal' }}>
+              {wiki.instagram && <a href={`https://www.instagram.com/${wiki.instagram}/`} target="_blank" rel="noreferrer">INSTAGRAM ↗ </a>}
+              {wiki.x && <a href={`https://x.com/${wiki.x}`} target="_blank" rel="noreferrer">X ↗ </a>}
+              <a href={`https://www.wikidata.org/wiki/${wiki.qid}`} target="_blank" rel="noreferrer">{wiki.qid} ↗</a>
+            </span></div>
+          </>);
+        })()}
+      </div>
+
+      <div className="pf-sec pf-realblock">
         <div className="pf-h real">Reconnaissance <span className="tag">// REAL · overhead + public CCTV</span></div>
         <div className="recon-frame">
           <img className="recon-img sat" src={esriPatch(inst.lat, inst.lon)} alt="" draggable={false}
@@ -99,17 +148,39 @@ export default function TargetProfile() {
           <div className="recon-tag tl">SAT · ESRI WORLD IMAGERY</div>
           <div className="recon-tag br">{inst.lat.toFixed(4)} {inst.lon.toFixed(4)}</div>
         </div>
-        {cam && (
-          <div className="recon-frame" style={{ marginTop: 6 }}>
-            <img className="recon-img cam" src={`${cam.cam.url}?t=${camStamp()}`} alt="" draggable={false}
-              onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
-            <div className="recon-reticle thermal" />
-            <div className="recon-tag tl">CCTV · {cam.cam.source}</div>
-            <div className="recon-tag br">{Math.round(cam.km * 1000)} M · LIVE</div>
-            <div className="recon-cap">{cam.cam.name}</div>
+        <div className="mini" style={{ marginTop: 8 }}>
+          {cams === undefined ? 'scanning public camera networks…' : cams.length ? `zone cameras · ${cams.length} public feed${cams.length > 1 ? 's' : ''} within 2 km` : 'no public street camera within 2 km · satellite + street photos only'}
+        </div>
+        {!!cams?.length && (
+          <div className="recon-grid">
+            {cams.map(({ cam: c, km }) => (
+              <a key={c.id} className="recon-frame sm clk-img" href={c.url} target="_blank" rel="noreferrer" title={`${c.name} — open live still`}>
+                <img className="recon-img cam" src={camSrc(c)} alt="" draggable={false} onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
+                <div className="recon-reticle thermal" />
+                <div className="recon-tag tl">● {c.source}</div>
+                <div className="recon-tag br">{km < 1 ? `${Math.round(km * 1000)} M` : `${km.toFixed(1)} KM`}</div>
+                <div className="recon-cap">{c.name}</div>
+              </a>
+            ))}
           </div>
         )}
-        {cam === null && <div className="mini">no public street camera within range · satellite only</div>}
+      </div>
+
+      <div className="pf-sec pf-realblock">
+        <div className="pf-h real">Street level <span className="tag">// REAL · Wikimedia Commons</span></div>
+        {photos === undefined && <div className="mini">pulling geotagged photographs…</div>}
+        {photos === null && <div className="mini">photo archive unreachable</div>}
+        {photos && !photos.length && <div className="mini">no geotagged photographs within 600 m</div>}
+        {!!photos?.length && (
+          <div className="recon-grid three">
+            {photos.slice(0, 6).map((ph) => (
+              <a key={ph.page} className="recon-frame sq clk-img" href={ph.page} target="_blank" rel="noreferrer" title={`${ph.title}${ph.author ? ' — ' + ph.author : ''}`}>
+                <img className="recon-img street" src={ph.thumb} alt="" loading="lazy" draggable={false} onError={(e) => { (e.currentTarget.style.display = 'none'); }} />
+                <div className="recon-tag br">{Number.isFinite(ph.m) ? `${ph.m} M` : ''}{ph.year ? ` · ${ph.year}` : ''}</div>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="pf-sec">
@@ -139,7 +210,7 @@ export default function TargetProfile() {
         {aggressors.length ? aggressors.map(([id, n]) => {
           const ag = AGENT_INDEX[id];
           return (
-            <div key={id} className="pf-row" style={{ cursor: 'pointer' }} onClick={() => engine.selectAgent(id)}>
+            <div key={id} className="pf-row clk" onClick={() => engine.selectAgent(id)}>
               <span style={{ color: rgba(ag?.color ?? [200, 200, 200]) }}>{ag?.handle ?? id}</span>
               <b>{'|'.repeat(Math.max(1, Math.round((n / maxAgg) * 14)))} {n}</b>
             </div>
@@ -168,7 +239,7 @@ export default function TargetProfile() {
       <div className="pf-sec">
         <div className="pf-h">Linked nodes <span className="tag">// adjacency</span></div>
         {links.map(({ inst: d, km }) => (
-          <div key={d.id} className="pf-row" style={{ cursor: 'pointer' }} onClick={() => engine.selectInstitution(d.id)}>
+          <div key={d.id} className="pf-row clk" onClick={() => engine.selectInstitution(d.id)}>
             <span className="pf-link">{d.name}</span><b>{km < 10 ? km.toFixed(1) : Math.round(km)} KM{(snap.hits[d.id] ?? 0) ? ` · ${snap.hits[d.id]}✕` : ''}</b>
           </div>
         ))}

@@ -81,19 +81,24 @@ body {
 .ghud-controls button:hover { border-color: rgba(235,238,245,0.5); color: var(--ink); }
 .ghud-controls button.on { border-color: rgba(230,0,38,0.6); color: var(--ink); background: rgba(230,0,38,0.12); }
 .ghud-sep { color: var(--ink-faint); margin: 0 2px 0 8px; }
+/* when a Target Profile is open it takes the left of the centre band — slide the HUD right of it */
+.shell:has(.profile) .ghud { left: 796px; }
 
-/* sensor visual presets — recolour the whole map canvas (MAP only; globe keeps its default) */
-.map-root.preset-crt canvas { filter: grayscale(0.15) contrast(1.35) brightness(1.06) saturate(1.2); }
-.map-root.preset-nvg canvas { filter: grayscale(1) brightness(1.15) contrast(1.2) sepia(1) hue-rotate(55deg) saturate(4); }
-.map-root.preset-flir canvas { filter: grayscale(1) contrast(1.5) brightness(1.0) sepia(1) hue-rotate(325deg) saturate(5); }
-.map-root.preset-noir canvas { filter: grayscale(1) contrast(1.5) brightness(0.9); }
-/* CRT: stronger scanlines + flicker */
-.map-root.preset-crt .map-scanlines { opacity: 1; }
-.map-root.preset-crt::after { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  background: rgba(120,255,180,0.04); mix-blend-mode: screen; animation: ghud-flicker 5s steps(30) infinite; }
-@keyframes ghud-flicker { 0%,97%,100% { opacity: 0.25; } 98% { opacity: 0.55; } 99% { opacity: 0.1; } }
-.map-root.preset-flir::after, .map-root.preset-nvg::after { content: ''; position: absolute; inset: 0; z-index: 3;
-  pointer-events: none; box-shadow: inset 0 0 160px rgba(0,0,0,0.7); }
+/* ── clickable affordance: anything you can click shows a crimson ▸ on rollover ── */
+.clk { position: relative; cursor: pointer; transition: padding-left 0.12s ease, color 0.12s ease; }
+.clk::before { content: '▸'; position: absolute; left: 0; top: 0; color: var(--crimson);
+  opacity: 0; transform: translateX(-5px); transition: opacity 0.12s ease, transform 0.12s ease; pointer-events: none; }
+.clk:hover { padding-left: 12px !important; color: var(--ink) !important; }
+.clk:hover::before { opacity: 1; transform: none; }
+.chip, .vbtn { position: relative; }
+.chip:hover::before, .vbtn:hover::before { content: '▸'; position: absolute; left: -10px; color: var(--crimson); }
+.clk-tag { cursor: pointer; } .clk-tag:hover { color: var(--crimson) !important; }
+.clk-img { cursor: pointer; transition: border-color 0.12s ease; }
+.clk-img::before { content: 'OPEN ↗'; position: absolute; top: 3px; right: 4px; z-index: 2; font-size: 9px; letter-spacing: 1px;
+  color: var(--crimson); text-shadow: 0 0 4px #000; opacity: 0; transition: opacity 0.12s ease; pointer-events: none; }
+.clk-img:hover { border-color: rgba(230,0,38,0.7) !important; }
+.clk-img:hover::before { opacity: 1; }
+.map-tooltip .tt-hint { display: block; color: var(--ink-faint); font-size: 9px; letter-spacing: 1px; margin-top: 1px; }
 
 .cam-card { position: absolute; z-index: 7; width: 240px; background: rgba(0,0,0,0.85);
   border: 1px solid rgba(120,205,225,0.5); pointer-events: none; box-shadow: 0 0 20px rgba(0,0,0,0.7); }
@@ -176,7 +181,7 @@ body {
   mask-image: linear-gradient(to bottom, transparent, #000 12%); }
 .ev {
   display: grid; grid-template-columns: 56px 12px 1fr auto; gap: 10px; align-items: baseline;
-  padding: 0; color: var(--ink); cursor: default;
+  padding: 0; color: var(--ink);
 }
 .ev:hover { color: var(--ink); }
 .ev .t { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
@@ -214,6 +219,7 @@ body {
 .detail .row { display: flex; justify-content: space-between; gap: 12px; }
 .detail .row span { color: var(--ink-dim); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .detail .row b { color: var(--ink); font-weight: 400; }
+.detail .row .hl-city { font-style: normal; color: var(--ink-faint); }
 
 /* ═══ view selector — plain text links ══════════════════════════ */
 .viewsel { position: absolute; top: 46px; left: 36px;
@@ -341,5 +347,15 @@ body {
 .recon-tag { position: absolute; font-size: 9px; letter-spacing: 1px; color: rgba(235,238,245,0.9);
   text-shadow: 0 0 4px #000, 0 0 2px #000; padding: 2px 4px; pointer-events: none; }
 .recon-tag.tl { top: 3px; left: 4px; } .recon-tag.br { bottom: 3px; right: 4px; }
+.recon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+.recon-grid.three { grid-template-columns: repeat(3, 1fr); }
+.recon-grid .recon-frame { margin-top: 0; }
+a.recon-frame { display: block; }
+.recon-frame.sq { aspect-ratio: 1 / 1; }
+.recon-frame.sm .recon-reticle::before { width: 20px; height: 20px; }
+.recon-frame.sm .recon-tag, .recon-frame.sm .recon-cap { font-size: 8px; }
+.recon-frame.sm .recon-cap { right: 40px; }
+.recon-img.street { filter: grayscale(0.55) contrast(1.15) brightness(0.9); }
+.pf-row.real b.wrap { white-space: normal; text-align: right; }
 .recon-cap { position: absolute; left: 4px; bottom: 3px; right: 70px; font-size: 9px; letter-spacing: 0.5px;
   color: rgba(235,238,245,0.75); text-shadow: 0 0 4px #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }

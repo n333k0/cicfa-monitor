@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 1680, height: 945 } });
+const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text());});
+await p.goto('https://n333k0.github.io/cicfa-monitor/',{waitUntil:'domcontentloaded'});
+await p.waitForTimeout(5000);
+const hud = await p.evaluate(()=>{const g=document.querySelector('.ghud');return g?[...g.querySelectorAll('.ghud-cls,.ghud-coord,.ghud-controls button')].map(e=>e.textContent.replace(/\s+/g,' ').trim()).join(' | '):'(no ghud)';});
+console.log('LIVE HUD:', hud);
+console.log('ERRORS',errs.length); for(const e of errs.slice(0,5))console.log(' •',e.slice(0,140));
+await b.close();

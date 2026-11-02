@@ -1,18 +1,10 @@
 // God's-Eye HUD chrome for the MAP view — classification strip, MGRS + lat/lon
-// readout, REC clock, live-data ticker, sensor visual presets and tilt/overhead
-// toggles. Pure overlay (aesthetic theatre, clearly a SIMULATION); the real data
+// readout, REC clock, live-data ticker and SAT / TILT toggles. Always OPTICAL
+// (the artist dropped the CRT/NVG/FLIR/NOIR presets, 2026-11-02).
+// Pure overlay (aesthetic theatre, clearly a SIMULATION); the real data
 // lives in the layers underneath. Inspired by bilawalsidhu/gods-eye-view.
 import { useEffect, useMemo, useState } from 'react';
 import { forward } from 'mgrs';
-
-export type Preset = 'normal' | 'crt' | 'nvg' | 'flir' | 'noir';
-export const PRESETS: { id: Preset; label: string }[] = [
-  { id: 'normal', label: 'OPTICAL' },
-  { id: 'crt', label: 'CRT' },
-  { id: 'nvg', label: 'NVG' },
-  { id: 'flir', label: 'FLIR' },
-  { id: 'noir', label: 'NOIR' },
-];
 
 const TICKER = [
   'REFRESHING LIVE DATA // SATELLITE',
@@ -37,12 +29,11 @@ function dms(v: number, pos: string, neg: string): string {
 
 interface Props {
   lon: number; lat: number; zoom: number;
-  preset: Preset; onPreset: (p: Preset) => void;
   sat: boolean; onSat: () => void;
   tilt: boolean; onTilt: () => void;
 }
 
-export default function MapHud({ lon, lat, zoom, preset, onPreset, sat, onSat, tilt, onTilt }: Props) {
+export default function MapHud({ lon, lat, zoom, sat, onSat, tilt, onTilt }: Props) {
   const [clock, setClock] = useState('');
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -52,14 +43,13 @@ export default function MapHud({ lon, lat, zoom, preset, onPreset, sat, onSat, t
   }, []);
   const wrappedLon = ((((lon + 180) % 360) + 360) % 360) - 180;
   const mgrs = useMemo(() => mgrsOf(wrappedLon, lat), [wrappedLon, lat]);
-  const presetLabel = PRESETS.find((p) => p.id === preset)?.label ?? 'OPTICAL';
 
   return (
     <div className="ghud">
       {/* classification strip, top of the map band */}
       <div className="ghud-class">
         <span className="ghud-rec"><i /> REC {clock}</span>
-        <span className="ghud-cls">CICFA // SI-TK // DWG-CICFA-01 · {presetLabel} · NOFORN · SIMULATION</span>
+        <span className="ghud-cls">CICFA // SI-TK // DWG-CICFA-01 · OPTICAL · NOFORN · SIMULATION</span>
         <span className="ghud-tick">{TICKER[tick % TICKER.length]}</span>
       </div>
 
@@ -74,10 +64,6 @@ export default function MapHud({ lon, lat, zoom, preset, onPreset, sat, onSat, t
       <div className="ghud-controls">
         <button className={sat ? 'on' : ''} onClick={onSat} title="Overhead imagery (S)">◹ SAT</button>
         <button className={tilt ? 'on' : ''} onClick={onTilt} title="Oblique view (T)">⛰ TILT</button>
-        <span className="ghud-sep">VISUAL PRESETS</span>
-        {PRESETS.map((p) => (
-          <button key={p.id} className={preset === p.id ? 'on' : ''} onClick={() => onPreset(p.id)}>{p.label}</button>
-        ))}
       </div>
     </div>
   );

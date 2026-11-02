@@ -18,7 +18,7 @@ export default function AgentPanel() {
           return (
             <div
               key={a.id}
-              className={`agent ${sel ? 'sel' : ''} ${off ? 'off' : ''}`}
+              className={`agent clk ${sel ? 'sel' : ''} ${off ? 'off' : ''}`}
               style={{ ['--agent' as string]: rgba(a.color) } as CSSProperties}
               onClick={() => engine.selectAgent(a.id)}
             >

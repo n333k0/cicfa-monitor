@@ -15,7 +15,7 @@ import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
 import { cityLayer } from './cityLayer';
-import MapHud, { type Preset } from './MapHud';
+import MapHud from './MapHud';
 import { camsInView, camStamp, type Cam } from '../sim/recon';
 import { nearest } from '../sim/intel';
 import { INSTITUTION_INDEX } from '../data/institutions';
@@ -41,7 +41,7 @@ export default function MapView() {
   // South Atlantic so Buenos Aires, Europe and Japan all sit in the open middle; wrapped copies show at the edges
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [vs, setVs] = useState<any>(() => ({ longitude: -16, latitude: -6, zoom: Math.max(1, Math.log2((window.innerWidth * 0.64) / 512)), pitch: 0, bearing: 0 }));
-  const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
+  const [hover, setHover] = useState<{ x: number; y: number; text: string; hint: string } | null>(null);
   // public traffic cameras in view (markers + feed card) — only where official catalogs exist
   const [cams, setCams] = useState<Cam[]>([]);
   const [camHover, setCamHover] = useState<{ x: number; y: number; cam: Cam } | null>(null);
@@ -56,10 +56,9 @@ export default function MapView() {
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Math.round(vs.longitude * 20), Math.round(vs.latitude * 20), Math.round(vs.zoom)]);
-  // god's-eye controls: REAL overhead imagery, oblique tilt, sensor visual preset
+  // god's-eye controls: REAL overhead imagery + oblique tilt (always OPTICAL)
   const [sat, setSat] = useState(false);
   const [tilt, setTilt] = useState(false);
-  const [preset, setPreset] = useState<Preset>('normal');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toggleTilt = () => setVs((v: any) => ({ ...v, pitch: v.pitch > 0 ? 0 : 50, transitionDuration: 400 }));
   useEffect(() => { setTilt(vs.pitch > 0); }, [vs.pitch]);
@@ -70,13 +69,10 @@ export default function MapView() {
       if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
       if (e.key === 's' || e.key === 'S') setSat((v) => !v);
       else if (e.key === 't' || e.key === 'T') toggleTilt();
-      else if (e.key === 'v' || e.key === 'V') setPreset((p) => { const o: Preset[] = ['normal', 'crt', 'nvg', 'flir', 'noir']; return o[(o.indexOf(p) + 1) % o.length]; });
     };
     window.addEventListener('keydown', onKey);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).CICFA_sat = (on?: boolean) => setSat((v) => (on === undefined ? !v : !!on));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).CICFA_preset = (p: Preset) => setPreset(p);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -181,7 +177,7 @@ export default function MapView() {
       getRadius: (d: typeof insts[number]) => (d.id === sel ? 2.2 : 0.7 + Math.min(1.2, (hits[d.id] ?? 0) * 0.06)),
       getFillColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : [205, 212, 228, 235]),
       onClick: (i: PickingInfo) => { if (i.object) engine.selectInstitution((i.object as { id: string }).id); return true; },
-      onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `${(i.object as { name: string }).name}` } : null),
+      onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `▸ ${(i.object as { name: string }).name}`, hint: 'CLICK · OPEN TARGET PROFILE' } : null),
       updateTriggers: { getRadius: [snap.version, sel], getFillColor: [sel] },
     }),
     // institution name labels — appear as you zoom in (targeted + selected only, to avoid clutter)
@@ -234,6 +230,7 @@ export default function MapView() {
       getFillColor: (a: typeof AGENTS[number]) => [a.color[0], a.color[1], a.color[2], 235],
       getLineColor: [255, 255, 255, 130], getLineWidth: 0.6,
       onClick: (i: PickingInfo) => { if (i.object) engine.selectAgent((i.object as { id: string }).id); return true; },
+      onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `▸ ${(i.object as { handle: string }).handle}`, hint: 'CLICK · SELECT OPERATION' } : null),
       updateTriggers: { getRadius: [snap.selectedAgent] },
     }),
     new TextLayer({
@@ -261,17 +258,18 @@ export default function MapView() {
   ];
 
   return (
-    <div className={`map-root preset-${preset}`}>
+    <div className="map-root">
       <DeckGL
         views={new DeckMapView({ repeat: true })}
         viewState={vs}
         onViewStateChange={(p: { viewState: unknown }) => setVs(p.viewState)}
         controller
         layers={layers}
+        getCursor={({ isDragging, isHovering }: { isDragging: boolean; isHovering: boolean }) => (isDragging ? 'grabbing' : isHovering ? 'pointer' : 'grab')}
       />
-      <MapHud lon={vs.longitude} lat={vs.latitude} zoom={vs.zoom} preset={preset} onPreset={setPreset}
+      <MapHud lon={vs.longitude} lat={vs.latitude} zoom={vs.zoom}
         sat={sat} onSat={() => setSat((v) => !v)} tilt={tilt} onTilt={toggleTilt} />
-      {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}</div>}
+      {hover && <div className="map-tooltip" style={{ left: hover.x + 14, top: hover.y + 14 }}>{hover.text}<span className="tt-hint">{hover.hint}</span></div>}
       {camHover && (
         <div className="cam-card" style={{ left: Math.min(camHover.x + 14, window.innerWidth - 260), top: Math.min(camHover.y + 14, window.innerHeight - 190) }}>
           <img src={`${camHover.cam.url}?t=${camStamp()}`} alt="" draggable={false} onError={(e) => { e.currentTarget.style.display = 'none'; }} />

@@ -28,7 +28,7 @@ export default function StatsPanel() {
           const n = s.byVector[v];
           const on = snap.filters.vectors.has(v);
           return (
-            <div key={v} className={`vrow ${on ? '' : 'mute'}`} onClick={() => engine.toggleVector(v)}>
+            <div key={v} className={`vrow clk ${on ? '' : 'mute'}`} onClick={() => engine.toggleVector(v)}>
               <span className="vl" style={{ color: rgba(def.color) }}><i>{def.glyph}</i>{def.label}</span>
               <span className="vbar"><span style={{ width: `${(n / max) * 100}%`, background: rgba(def.color, 0.85) }} /></span>
               <span className="vn">{n}</span>

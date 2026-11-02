@@ -20,7 +20,7 @@ export default function EventFeed() {
           const def = VECTORS[e.vector];
           const ag = AGENT_INDEX[e.agentId];
           return (
-            <div key={e.id} className="ev" onClick={() => engine.selectInstitution(e.targetId)}>
+            <div key={e.id} className="ev clk" title="Open target profile" onClick={() => engine.selectInstitution(e.targetId)}>
               <span className="t">{fmtTime(e.startedAt)}</span>
               <span className="g" style={{ color: rgba(def.color) }}>{def.glyph}</span>
               <span className="d"><b style={{ color: rgba(ag?.color ?? def.color) }}>{ag?.handle ?? e.agentId}</b> {e.line}</span>
