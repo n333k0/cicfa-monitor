@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import { MapView as DeckMapView, FlyToInterpolator, WebMercatorViewport } from '@deck.gl/core';
-import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer, LineLayer, BitmapLayer } from '@deck.gl/layers';
+import { ScatterplotLayer, ArcLayer, GeoJsonLayer, TextLayer, LineLayer, BitmapLayer, IconLayer } from '@deck.gl/layers';
 import { TileLayer } from '@deck.gl/geo-layers';
 import type { PickingInfo } from '@deck.gl/core';
 
 
 import { INSTITUTIONS } from '../data/institutions';
 import { AGENTS } from '../data/agents';
-import { VECTORS } from '../data/vectors';
+import { VECTORS, VECTOR_LIST } from '../data/vectors';
+const GLYPHS = VECTOR_LIST.map((v) => v.glyph).join('');
 import coastline from '../data/coastline.json';
 import borders from '../data/borders.json';
 import { V2, MAP_FONT, INK } from '../theme';
@@ -26,6 +27,11 @@ import type { AttackEvent } from '../sim/types';
 // FLAT view: pure thin-line minimal map on black (no basemap tiles / fills / labels).
 const transition = new FlyToInterpolator({ speed: 1.6 });
 const VIEWS = new DeckMapView({ repeat: true });
+// packets are hard-edged pixels: one 8×8 white square, tinted per event, sampled nearest (no smoothing)
+const SQ_ATLAS = (() => { const c = document.createElement('canvas'); c.width = c.height = 8; const g = c.getContext('2d')!; g.fillStyle = '#fff'; g.fillRect(0, 0, 8, 8); return c.toDataURL(); })();
+const SQ_MAP = { sq: { x: 0, y: 0, width: 8, height: 8, mask: true } };
+const TRAIL: [number, number, number][] = [[0, 7, 255], [0.022, 5, 150], [0.044, 3, 70]];   // [lag, px, alpha]
+type Pkt = { lon: number; lat: number; e: AttackEvent; s: number; a: number };
 // cap the drawing buffer at 1.5× on retina screens (2× = 4× the pixels for thin lines that barely change)
 const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
 const getCursor = ({ isDragging, isHovering }: { isDragging: boolean; isHovering: boolean }) => (isDragging ? 'grabbing' : isHovering ? 'pointer' : 'grab');
@@ -154,6 +160,15 @@ export default function MapView() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selInst, snap.version]);
 
+  const packets: Pkt[] = [];
+  for (const e of active) {
+    const p = Math.min(1, (now - e.startedAt) / e.durationMs);
+    for (const [lag, sz, a] of TRAIL) {
+      if (p - lag < 0) continue;
+      const [lon, lat] = slerp(e.sourceLon, e.sourceLat, e.targetLon, e.targetLat, p - lag);
+      packets.push({ lon, lat, e, s: sz + e.severity * 0.4, a });
+    }
+  }
   const worldFade = Math.max(0, Math.min(1, (10 - vs.zoom) / 2.5));   // crude world outlines give way to real streets
   // city tiles: rebuild the layer only when its zoom bucket / opacity step / satellite flag changes
   const cityZ = Math.round(vs.zoom * 8) / 8;
@@ -230,13 +245,23 @@ export default function MapView() {
       getWidth: (e: AttackEvent) => (V2 ? 0.4 + e.severity * 0.25 : 0.5 + e.severity * 0.4), getHeight: 0.3,
       updateTriggers: { getSourceColor: [now], getTargetColor: [now] },
     }),
-    new ScatterplotLayer({
-      id: 'packets', data: active.map((e) => { const p = Math.min(1, (now - e.startedAt) / e.durationMs); const [lon, lat] = slerp(e.sourceLon, e.sourceLat, e.targetLon, e.targetLat, p); return { lon, lat, e }; }),
-      radiusUnits: 'pixels',
-      getPosition: (p: { lon: number; lat: number }) => [p.lon, p.lat],
-      getRadius: (p: { e: AttackEvent }) => 1.4 + p.e.severity * 0.6,
-      getFillColor: (p: { e: AttackEvent }) => { const c = V2 ? INK : VECTORS[p.e.vector].color; return [c[0], c[1], c[2], 255]; },
-      updateTriggers: { getPosition: [now], getFillColor: [now] },
+    // packets: a pixel head + 2-pixel fading trail, with the event-type glyph riding beside the head
+    new IconLayer({
+      id: 'packets', data: packets, iconAtlas: SQ_ATLAS, iconMapping: SQ_MAP, getIcon: () => 'sq',
+      sizeUnits: 'pixels', getSize: (d: Pkt) => d.s, billboard: true,
+      textureParameters: { minFilter: 'nearest', magFilter: 'nearest' },
+      getPosition: (d: Pkt) => [d.lon, d.lat],
+      getColor: (d: Pkt) => { const c = V2 ? INK : VECTORS[d.e.vector].color; return [c[0], c[1], c[2], d.a]; },
+      updateTriggers: { getPosition: [now], getColor: [now], getSize: [now] },
+    }),
+    new TextLayer({
+      id: 'packet-glyphs', data: packets.filter((d) => d.a === 255),
+      getPosition: (d: Pkt) => [d.lon, d.lat], getText: (d: Pkt) => VECTORS[d.e.vector].glyph,
+      getSize: 13, sizeUnits: 'pixels', getPixelOffset: [10, -1],
+      // glyph lifted toward white so it survives the map's grey grade and reads at a glance
+      getColor: (d: Pkt) => { const c = V2 ? INK : VECTORS[d.e.vector].color; return [(c[0] + 510) / 3, (c[1] + 510) / 3, (c[2] + 510) / 3, 255]; },
+      fontFamily: MAP_FONT, characterSet: GLYPHS, getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      updateTriggers: { getPosition: [now] },
     }),
     // operation origins (the Cyber Weapons Lab on the map)
     new ScatterplotLayer({

@@ -204,6 +204,17 @@ export default function Globe() {
     }
     if (seg.length > 1) arcs.push({ e, path: seg });
   }
+  // packets: pixel head + 2-pixel fading trail along the lifted arc, with the event-type glyph (DOM, like the labels)
+  const pkts: { key: string; e: AttackEvent; x: number; y: number; s: number; a: number; head: boolean; color: string }[] = [];
+  for (const e of active) {
+    const p = Math.min(1, (now - e.startedAt) / e.durationMs), path = arcPath(e), i = Math.round(p * (path.length - 1));
+    const c = V2 ? INK : VECTORS[e.vector].color, color = `rgb(${c[0]},${c[1]},${c[2]})`;
+    [[0, 6, 1], [1, 4, 0.6], [2, 3, 0.28]].forEach(([lag, sz, a]) => {
+      const pt = path[i - lag]; if (!pt || !onFace(pt) || !vp) return;
+      const [x, y] = vp.project(pt);
+      pkts.push({ key: `${e.id}-${lag}`, e, x, y, s: Math.round(sz + e.severity * 0.4), a, head: lag === 0, color });
+    });
+  }
   const layers = [
     ...base,
     new SimpleMeshLayer({
@@ -230,14 +241,6 @@ export default function Globe() {
       getWidth: ({ e }: { e: AttackEvent }) => 0.8 + e.severity * 0.4,
       updateTriggers: { getColor: [now] },
     }),
-    new ScatterplotLayer({
-      id: 'packets', data: active.map((e) => { const p = Math.min(1, (now - e.startedAt) / e.durationMs); const path = arcPath(e); return { pos: path[Math.round(p * (path.length - 1))], e }; })
-        .filter((d) => onFace(d.pos)),
-      radiusUnits: 'pixels',
-      getPosition: (p: { pos: [number, number, number] }) => p.pos,
-      getRadius: (p: { e: AttackEvent }) => 1.5 + p.e.severity * 0.6,
-      getFillColor: [255, 255, 255, 255],
-    }),
   ];
 
   // atmosphere rim: a CSS glow sized to the globe's on-screen radius (deck: 512·2^z / 2π px)
@@ -261,6 +264,11 @@ export default function Globe() {
         onError={(e: Error, layer?: unknown) => console.error('deck', (layer as { id?: string })?.id, e?.message)}
       />
       <div className="globe-labels">
+        {pkts.map((k) => (
+          <span key={k.key} className={`gl-pkt ${k.head ? 'head' : ''}`} style={{ transform: `translate(${k.x}px, ${k.y}px)`, color: k.color, opacity: k.a }}>
+            <i style={{ width: k.s, height: k.s }} />{k.head && <b>{VECTORS[k.e.vector].glyph}</b>}
+          </span>
+        ))}
         {shown.map((l) => l.kind === 'country'
           ? <span key={l.key} className="gl-country" style={{ transform: `translate(${l.x}px, ${l.y}px) translate(-50%, -50%)`, opacity: l.f * 0.85 }}>{l.text}</span>
           : l.kind === 'city'
