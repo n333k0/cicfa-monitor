@@ -12,6 +12,7 @@ import { VECTORS, VECTOR_LIST } from '../data/vectors';
 const GLYPHS = VECTOR_LIST.map((v) => v.glyph).join('');
 import coastline from '../data/coastline.json';
 import borders from '../data/borders.json';
+import { safeFontRenderer } from './fontRenderer';
 import { V2, MAP_FONT, INK } from '../theme';
 import { PICK_RADIUS, IS_PHONE } from '../sim/touch';
 import { engine } from '../sim/engine';
@@ -216,13 +217,13 @@ export default function MapView() {
       getPosition: (l: CityLabel) => l.pos, getText: (l: CityLabel) => l.text,
       getSize: (l: CityLabel) => (l.cls === 'city' ? 11 : 10), sizeUnits: 'pixels',
       getColor: (l: CityLabel) => (l.cls === 'city' || l.cls === 'town' ? [235, 238, 245, 210] : [170, 178, 196, 160]),
-      fontFamily: MAP_FONT, characterSet: 'auto', getTextAnchor: 'middle', getAlignmentBaseline: 'center',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, characterSet: 'auto', getTextAnchor: 'middle', getAlignmentBaseline: 'center',
     }),
     new TextLayer({
       id: 'city-streets', data: shownCity.filter((l) => l.kind === 'street'), opacity: cityOpacity,
       getPosition: (l: CityLabel) => l.pos, getText: (l: CityLabel) => l.text, getAngle: (l: CityLabel) => l.angle,
       getSize: 9, sizeUnits: 'pixels', getColor: [150, 158, 178, 150],
-      fontFamily: MAP_FONT, characterSet: 'auto', getTextAnchor: 'middle', getAlignmentBaseline: 'center',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, characterSet: 'auto', getTextAnchor: 'middle', getAlignmentBaseline: 'center',
     }),
     new GeoJsonLayer({ id: 'graticule', opacity: worldFade, visible: worldFade > 0, data: GRATICULE, stroked: true, filled: false, getLineColor: [120, 130, 150, 18], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
     new GeoJsonLayer({ id: 'borders', opacity: worldFade, visible: worldFade > 0, data: borders as unknown as GeoJSON.FeatureCollection, stroked: true, filled: false, getLineColor: [120, 130, 148, 60], lineWidthUnits: 'pixels', getLineWidth: 0.5 }),
@@ -257,7 +258,7 @@ export default function MapView() {
       getText: (d: typeof insts[number]) => d.name.toUpperCase(),
       getSize: 11, sizeUnits: 'pixels',
       getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : (hits[d.id] ?? 0) > 0 ? [235, 238, 245, 225] : [160, 168, 184, 150]),
-      fontFamily: MAP_FONT, getTextAnchor: (d: { flip: boolean }) => (d.flip ? 'end' : 'start'), getAlignmentBaseline: 'center',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, getTextAnchor: (d: { flip: boolean }) => (d.flip ? 'end' : 'start'), getAlignmentBaseline: 'center',
       getPixelOffset: (d: { dy: number; flip: boolean }) => [d.flip ? -6 : 6, d.dy], characterSet: 'auto',
       updateTriggers: { getColor: [sel, snap.version] },
     }),
@@ -297,7 +298,7 @@ export default function MapView() {
       getSize: 13, sizeUnits: 'pixels', getPixelOffset: [10, -1],
       // glyph lifted toward white so it survives the map's grey grade and reads at a glance
       getColor: (d: Pkt) => { const c = V2 ? INK : VECTORS[d.e.vector].color; return [(c[0] + 510) / 3, (c[1] + 510) / 3, (c[2] + 510) / 3, 255]; },
-      fontFamily: MAP_FONT, characterSet: GLYPHS, getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, characterSet: GLYPHS, getTextAnchor: 'start', getAlignmentBaseline: 'center',
       updateTriggers: { getPosition: [now] },
     }),
     // operation origins (the Cyber Weapons Lab on the map)
@@ -317,7 +318,7 @@ export default function MapView() {
       getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
       getText: (a: typeof AGENTS[number]) => a.handle,
       getSize: 11, sizeUnits: 'pixels', getColor: V2 ? [...INK, 230] as [number, number, number, number] : [230, 0, 38, 230],
-      fontFamily: MAP_FONT, getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, getTextAnchor: 'start', getAlignmentBaseline: 'center',
       getPixelOffset: [7, 0], characterSet: 'auto',
     }),
     // PUBLIC traffic cameras (official catalogs) — cyan pins; hover shows the live feed
@@ -333,7 +334,7 @@ export default function MapView() {
       id: 'cam-glyphs', data: vs.zoom >= 11 ? cams : [],
       getPosition: (c: Cam) => [c.lon, c.lat], getText: () => '▣',
       getSize: 12, sizeUnits: 'pixels', getColor: [120, 205, 225, 180],
-      fontFamily: MAP_FONT, getTextAnchor: 'middle', getAlignmentBaseline: 'center', characterSet: 'auto',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, getTextAnchor: 'middle', getAlignmentBaseline: 'center', characterSet: 'auto',
     }),
   ];
 

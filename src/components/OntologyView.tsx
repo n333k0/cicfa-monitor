@@ -7,6 +7,7 @@ import type { PickingInfo } from '@deck.gl/core';
 import { INSTITUTIONS } from '../data/institutions';
 import { AGENTS } from '../data/agents';
 import { VECTORS } from '../data/vectors';
+import { safeFontRenderer } from './fontRenderer';
 import { MAP_FONT } from '../theme';
 import { PICK_RADIUS } from '../sim/touch';
 import { engine } from '../sim/engine';
@@ -124,7 +125,7 @@ export default function OntologyView() {
       getPosition: (d: Node) => [d.x, d.y], getText: (d: Node) => d.label,
       getSize: (d: Node) => (d.kind === 'op' ? 11 : d.kind === 'region' ? 10 : 9), sizeUnits: 'pixels',
       getColor: (d: Node) => (d.kind === 'op' ? [d.color[0], d.color[1], d.color[2], 255] : d.kind === 'region' ? [235, 240, 248, 230] : [190, 198, 214, 200]),
-      fontFamily: MAP_FONT, getTextAnchor: 'start', getAlignmentBaseline: 'center', getPixelOffset: [8, 0], characterSet: 'auto',
+      fontFamily: MAP_FONT, _getFontRenderer: safeFontRenderer, getTextAnchor: 'start', getAlignmentBaseline: 'center', getPixelOffset: [8, 0], characterSet: 'auto',
     }),
   ];
 
