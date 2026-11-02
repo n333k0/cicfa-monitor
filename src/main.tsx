@@ -1,7 +1,11 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles/global.css';
+import './styles/v2.css';
 import App from './App.tsx';
+import { V2 } from './theme';
+
+if (V2) { document.documentElement.classList.add('v2'); document.title = 'CICFA · Monitor v2'; }
 
 function mount() {
   createRoot(document.getElementById('root')!).render(

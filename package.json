@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:all": "pnpm build && rm -rf .v2tmp && cp -R dist .v2tmp && mv .v2tmp dist/v2",
+    "ship": "pnpm build:all && npx gh-pages -d dist -t"
   },
   "dependencies": {
     "@deck.gl/core": "^9.4.1",

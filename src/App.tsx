@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import MapView from './components/MapView';
 import Globe from './components/GlobeView';
 import Ontology from './components/OntologyView';
@@ -14,11 +14,15 @@ import GlitchFX from './components/fx/GlitchFX';
 import RawStream from './components/fx/RawStream';
 import TargetProfile from './components/hud/TargetProfile';
 import { engine } from './sim/engine';
+import { V2 } from './theme';
+import IconRail from './components/v2/IconRail';
+import MasterIndex, { IndexTab } from './components/v2/MasterIndex';
 import { useEngine } from './sim/useEngine';
 import { installGlobalBridge, attachPostMessageBridge } from './sim/connectors';
 
 export default function App() {
   const snap = useEngine();
+  const [indexOpen, setIndexOpen] = useState(false);
   useEffect(() => {
     engine.start();
     installGlobalBridge();
@@ -32,9 +36,11 @@ export default function App() {
     <div className={`shell ${snap.panelMode}`}>
       <Stage />
       {snap.selectedInstitution ? <TargetProfile /> : <RawStream />}
-      <GlitchFX />
+      {!V2 && <GlitchFX />}
       <TopBar />
-      <ViewSelector />
+      {!V2 && <ViewSelector />}
+      {V2 && <IconRail onIndex={() => setIndexOpen(true)} />}
+      {V2 && <IndexTab onOpen={() => setIndexOpen(true)} />}
       <div className="col-l">
         <AgentPanel />
         <DetailCard />
@@ -45,6 +51,7 @@ export default function App() {
         <EventFeed />
       </div>
       <Dock />
+      {V2 && <MasterIndex open={indexOpen} onClose={() => setIndexOpen(false)} />}
     </div>
   );
 }

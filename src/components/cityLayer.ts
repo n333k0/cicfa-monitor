@@ -3,9 +3,10 @@
 // roads by class, water, parks, (buildings very close), place + street names in JetBrains Mono.
 import { MVTLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer, TextLayer } from '@deck.gl/layers';
+import { MAP_FONT } from '../theme';
 
 const TILEJSON = 'https://tiles.openfreemap.org/planet';
-const FONT = 'JetBrains Mono, monospace';
+const FONT = MAP_FONT;
 
 type RGBA = [number, number, number, number];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

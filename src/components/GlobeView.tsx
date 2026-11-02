@@ -16,6 +16,7 @@ import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
 import type { AttackEvent } from '../sim/types';
+import { V2, INK } from '../theme';
 
 // GLOBE — the piece's red planet (redone 2026-11-02 after the artist's notes): dark oxblood
 // ocean, crimson land with bright coasts, an atmosphere rim, readable white labels
@@ -225,7 +226,7 @@ export default function Globe() {
     new PathLayer({
       id: 'arcs', data: arcs, widthUnits: 'pixels', capRounded: true, jointRounded: true,
       getPath: (a: { path: [number, number, number][] }) => a.path,
-      getColor: ({ e }: { e: AttackEvent }) => { const c = VECTORS[e.vector].color; return [Math.min(255, c[0] + 60), Math.min(255, c[1] + 60), Math.min(255, c[2] + 60), 70 + envelope((now - e.startedAt) / e.durationMs) * 170]; },
+      getColor: ({ e }: { e: AttackEvent }) => { const c = V2 ? INK.map((x) => x - 60) : VECTORS[e.vector].color; return [Math.min(255, c[0] + 60), Math.min(255, c[1] + 60), Math.min(255, c[2] + 60), 70 + envelope((now - e.startedAt) / e.durationMs) * 170]; },
       getWidth: ({ e }: { e: AttackEvent }) => 0.8 + e.severity * 0.4,
       updateTriggers: { getColor: [now] },
     }),

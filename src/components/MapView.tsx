@@ -11,6 +11,7 @@ import { AGENTS } from '../data/agents';
 import { VECTORS } from '../data/vectors';
 import coastline from '../data/coastline.json';
 import borders from '../data/borders.json';
+import { V2, MAP_FONT, INK } from '../theme';
 import { engine } from '../sim/engine';
 import { slerp } from '../sim/geo';
 import { useEngine, useFrame } from '../sim/useEngine';
@@ -66,6 +67,8 @@ export default function MapView() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const toggleTilt = () => setVs((v: any) => ({ ...v, pitch: v.pitch > 0 ? 0 : 50, transitionDuration: 400 }));
   useEffect(() => { setTilt(vs.pitch > 0); }, [vs.pitch]);
+  // let the v2 icon rail mirror / drive SAT + TILT
+  useEffect(() => { window.dispatchEvent(new CustomEvent('cicfa:mapstate', { detail: { sat, tilt } })); }, [sat, tilt]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -77,6 +80,8 @@ export default function MapView() {
     window.addEventListener('keydown', onKey);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).CICFA_sat = (on?: boolean) => setSat((v) => (on === undefined ? !v : !!on));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).CICFA_tilt = () => toggleTilt();
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -200,7 +205,7 @@ export default function MapView() {
       getText: (d: typeof insts[number]) => d.name.toUpperCase(),
       getSize: 11, sizeUnits: 'pixels',
       getColor: (d: typeof insts[number]) => (d.id === sel ? [255, 220, 150, 255] : (hits[d.id] ?? 0) > 0 ? [235, 238, 245, 225] : [160, 168, 184, 150]),
-      fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      fontFamily: MAP_FONT, getTextAnchor: 'start', getAlignmentBaseline: 'center',
       getPixelOffset: (d: { dy: number }) => [6, d.dy], characterSet: 'auto',
       updateTriggers: { getColor: [sel, snap.version] },
     }),
@@ -213,16 +218,16 @@ export default function MapView() {
     new ArcLayer({
       id: 'sel-aggressors', data: aggressorLinks, greatCircle: true, widthUnits: 'pixels',
       getSourcePosition: (d: { from: [number, number] }) => d.from, getTargetPosition: (d: { to: [number, number] }) => d.to,
-      getSourceColor: (d: { a: { color: number[] } }) => [d.a.color[0], d.a.color[1], d.a.color[2], 60],
+      getSourceColor: (d: { a: { color: number[] } }) => (V2 ? [...INK, 60] as [number, number, number, number] : [d.a.color[0], d.a.color[1], d.a.color[2], 60]),
       getTargetColor: [230, 0, 38, 200], getWidth: 1.1,
     }),
     new ArcLayer({
       id: 'arcs', data: active, greatCircle: true, widthUnits: 'pixels',
       getSourcePosition: (e: AttackEvent) => [e.sourceLon, e.sourceLat],
       getTargetPosition: (e: AttackEvent) => [e.targetLon, e.targetLat],
-      getSourceColor: (e: AttackEvent) => { const c = VECTORS[e.vector].color; return [c[0], c[1], c[2], 18 + envelope((now - e.startedAt) / e.durationMs) * 70]; },
-      getTargetColor: (e: AttackEvent) => { const c = VECTORS[e.vector].color; return [c[0], c[1], c[2], 55 + envelope((now - e.startedAt) / e.durationMs) * 180]; },
-      getWidth: (e: AttackEvent) => 0.5 + e.severity * 0.4, getHeight: 0.3,
+      getSourceColor: (e: AttackEvent) => { const c = V2 ? INK : VECTORS[e.vector].color; return [c[0], c[1], c[2], (V2 ? 0.45 : 1) * (18 + envelope((now - e.startedAt) / e.durationMs) * 70)]; },
+      getTargetColor: (e: AttackEvent) => { const c = V2 ? INK : VECTORS[e.vector].color; return [c[0], c[1], c[2], (V2 ? 0.5 : 1) * (55 + envelope((now - e.startedAt) / e.durationMs) * 180)]; },
+      getWidth: (e: AttackEvent) => (V2 ? 0.4 + e.severity * 0.25 : 0.5 + e.severity * 0.4), getHeight: 0.3,
       updateTriggers: { getSourceColor: [now], getTargetColor: [now] },
     }),
     new ScatterplotLayer({
@@ -230,7 +235,7 @@ export default function MapView() {
       radiusUnits: 'pixels',
       getPosition: (p: { lon: number; lat: number }) => [p.lon, p.lat],
       getRadius: (p: { e: AttackEvent }) => 1.4 + p.e.severity * 0.6,
-      getFillColor: (p: { e: AttackEvent }) => { const c = VECTORS[p.e.vector].color; return [c[0], c[1], c[2], 255]; },
+      getFillColor: (p: { e: AttackEvent }) => { const c = V2 ? INK : VECTORS[p.e.vector].color; return [c[0], c[1], c[2], 255]; },
       updateTriggers: { getPosition: [now], getFillColor: [now] },
     }),
     // operation origins (the Cyber Weapons Lab on the map)
@@ -239,7 +244,7 @@ export default function MapView() {
       radiusUnits: 'pixels', stroked: true, lineWidthUnits: 'pixels',
       getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
       getRadius: (a: typeof AGENTS[number]) => (snap.selectedAgent === a.id ? 6 : 3.5),
-      getFillColor: (a: typeof AGENTS[number]) => [a.color[0], a.color[1], a.color[2], 235],
+      getFillColor: (a: typeof AGENTS[number]) => (V2 ? [...INK, 235] as [number, number, number, number] : [a.color[0], a.color[1], a.color[2], 235]),
       getLineColor: [255, 255, 255, 130], getLineWidth: 0.6,
       onClick: (i: PickingInfo) => { if (i.object) engine.selectAgent((i.object as { id: string }).id); return true; },
       onHover: (i: PickingInfo) => setHover(i.object ? { x: i.x, y: i.y, text: `▸ ${(i.object as { handle: string }).handle}`, hint: 'CLICK · SELECT OPERATION' } : null),
@@ -249,8 +254,8 @@ export default function MapView() {
       id: 'op-labels', data: ops,
       getPosition: (a: typeof AGENTS[number]) => [a.originLon, a.originLat],
       getText: (a: typeof AGENTS[number]) => a.handle,
-      getSize: 11, sizeUnits: 'pixels', getColor: [230, 0, 38, 230],
-      fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'start', getAlignmentBaseline: 'center',
+      getSize: 11, sizeUnits: 'pixels', getColor: V2 ? [...INK, 230] as [number, number, number, number] : [230, 0, 38, 230],
+      fontFamily: MAP_FONT, getTextAnchor: 'start', getAlignmentBaseline: 'center',
       getPixelOffset: [7, 0], characterSet: 'auto',
     }),
     // PUBLIC traffic cameras (official catalogs) — cyan pins; hover shows the live feed
@@ -265,7 +270,7 @@ export default function MapView() {
       id: 'cam-glyphs', data: vs.zoom >= 11 ? cams : [],
       getPosition: (c: Cam) => [c.lon, c.lat], getText: () => '▣',
       getSize: 12, sizeUnits: 'pixels', getColor: [120, 205, 225, 180],
-      fontFamily: 'JetBrains Mono, monospace', getTextAnchor: 'middle', getAlignmentBaseline: 'center', characterSet: 'auto',
+      fontFamily: MAP_FONT, getTextAnchor: 'middle', getAlignmentBaseline: 'center', characterSet: 'auto',
     }),
   ];
 

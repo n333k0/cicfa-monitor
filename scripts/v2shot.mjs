@@ -1,0 +1,22 @@
+// v2 visual check: home, target profile, master index, globe (+ console errors)
+import { chromium } from 'playwright';
+const URL = process.env.URL ?? 'http://localhost:4173/v2/';
+const b = await chromium.launch(process.env.GPU ? { args: ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] } : { args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 1680, height: 945 } });
+const errs = []; p.on('pageerror', (e) => errs.push(e.message)); p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+await p.goto(URL, { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(7000);
+console.log('v2 class:', await p.evaluate(() => document.documentElement.className), '| font:', await p.evaluate(() => getComputedStyle(document.body).fontFamily), '| bg:', await p.evaluate(() => getComputedStyle(document.body).backgroundColor));
+await p.screenshot({ path: '/tmp/v2-home.png', timeout: 90000 });
+await p.hover('.rail-btn:nth-child(2)'); await p.waitForTimeout(300);
+await p.screenshot({ path: '/tmp/v2-rail.png', clip: { x: 1400, y: 40, width: 280, height: 300 }, timeout: 90000 });
+await p.evaluate(() => window.CICFA.select('malba')); await p.waitForTimeout(9000);
+await p.screenshot({ path: '/tmp/v2-profile.png', timeout: 90000 });
+await p.evaluate(() => window.CICFA.select(null)); await p.waitForTimeout(500);
+await p.click('.index-tab'); await p.waitForTimeout(800);
+await p.screenshot({ path: '/tmp/v2-index.png', timeout: 90000 });
+await p.keyboard.press('Escape');
+await p.click('.rail-btn:nth-child(2)'); await p.waitForTimeout(5000);
+await p.screenshot({ path: '/tmp/v2-globe.png', timeout: 90000 });
+console.log('ERRORS', errs.length); for (const e of errs.slice(0, 5)) console.log(' •', e.slice(0, 200));
+await b.close();

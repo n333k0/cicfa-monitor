@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { engine } from '../../sim/engine';
-import { INSTITUTION_INDEX } from '../../data/institutions';
+import { INSTITUTION_INDEX, INSTITUTIONS } from '../../data/institutions';
+import { V2 } from '../../theme';
 import { AGENT_INDEX } from '../../data/agents';
 import { VECTORS } from '../../data/vectors';
 import { useEngine } from '../../sim/useEngine';
@@ -76,12 +77,37 @@ export default function TargetProfile() {
 
   return (
     <div className="profile panel">
+      {V2 ? (() => {
+        // Tomb header: counter · type line · big name, with ◂ ▸ stepping through the hot list
+        const n = INSTITUTIONS.findIndex((d) => d.id === inst.id) + 1;
+        const hot = snap.stats.topTargets.map((t) => t.id);
+        const k = hot.indexOf(inst.id);
+        const step = (dir: number) => { const ids = hot.length ? hot : [inst.id]; const j = k < 0 ? 0 : (k + dir + ids.length) % ids.length; engine.selectInstitution(ids[j]); };
+        return (
+          <div className="pf2-head">
+            <button className="pf2-arrow l" onClick={() => step(-1)} aria-label="Previous target">◂</button>
+            <button className="pf2-arrow r" onClick={() => step(1)} aria-label="Next target">▸</button>
+            <span className="pf2-close clk-tag" onClick={() => engine.selectInstitution(null)}>✕</span>
+            <div className="pf2-count"><b>{String(n).padStart(4, '0')}</b> <i>of {INSTITUTIONS.length.toLocaleString('en-US')}</i></div>
+            <div className="pf2-type">{inst.kind} · {inst.city}, {inst.country}</div>
+            <div className="pf2-name">{inst.name}</div>
+            <dl className="pf2-spec">
+              <dt>LAT</dt><dd>{inst.lat.toFixed(4)}{approx ? ' ±' : ''}</dd>
+              <dt>LON</dt><dd>{inst.lon.toFixed(4)}</dd>
+              <dt>PRM</dt><dd>{'◆'.repeat(inst.prominence)}{'◇'.repeat(5 - inst.prominence)}</dd>
+              <dt>HIT</dt><dd className={strikes ? 'crit' : ''}>{strikes}</dd>
+              {inst.scene && <><dt>SCN</dt><dd>{inst.scene}</dd></>}
+            </dl>
+          </div>
+        );
+      })() : (<>
       <div className="panel-h"><span>Target Profile <span className="tag">// {inst.id.toUpperCase()}</span></span>
         <span className="tag clk-tag" onClick={() => engine.selectInstitution(null)}>✕ CLOSE</span></div>
 
       <div className="pf-name">{inst.name}</div>
       <div className="mini">{inst.kind} · {inst.city} · {inst.country}{inst.scene ? ` · ${inst.scene}` : ''}</div>
       <div className="mini">{inst.lat.toFixed(4)}, {inst.lon.toFixed(4)}{approx ? ' · ±APPROX' : ''} · PROMINENCE {'◆'.repeat(inst.prominence)}{'◇'.repeat(5 - inst.prominence)}</div>
+      </>)}
 
       <div className="pf-sec pf-realblock">
         <div className="pf-h real">Open source intelligence <span className="tag">// REAL · OpenStreetMap</span></div>
